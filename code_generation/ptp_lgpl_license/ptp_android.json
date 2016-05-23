@@ -1,0 +1,9 @@
+{
+    "OpCode": {
+        "0x95C1": "GetPartialObject64", 
+        "0x95C2": "SendPartialObject", 
+        "0x95C3": "TruncateObject", 
+        "0x95C4": "BeginEditObject", 
+        "0x95C5": "EndEditObject"
+    }
+}

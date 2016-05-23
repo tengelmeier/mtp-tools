@@ -1,0 +1,78 @@
+{% macro generate_opcodes( prefix, table ) %}
+
+local {{prefix}}S = {
+    {% for code, desc in table | dictsort() %}
+    {{desc['name']}} = {{code}},
+    {% endfor %}
+}
+
+local {{prefix}}_DESCRIPTIONS = {
+    {% for code, desc in  table | dictsort() %}
+    [{{prefix}}S.{{desc['name']}}] = '{{desc['description']}}',
+    {% endfor %}
+
+}
+{% endmacro %}
+{% macro generate_table( prefix, table ) %}
+local {{prefix}}_DESCRIPTIONS = {
+    {% for code, desc in  table | dictsort() %}
+    [{{code}}] = '{{desc['description']}}',
+    {% endfor %}
+}
+{% endmacro %}
+{% macro generate_parameters( prefix, table ) %}
+-- the table below has inconsistent string quotations to accomodate an ' occuring within the descriptions
+local {{prefix}} = {
+    {% for code, desc in  table | dictsort() %}
+    [MTP_OPERATIONS.{{desc['name']}}] = {"{{desc['parameters'] | join('","') }}"},
+    {% endfor %}
+}
+{% endmacro %}
+{#  ******** Vendor extension handling *********** #}
+{% macro description_name( table_name ) %}
+{%- if table_name == 'OpCode' -%}
+OperationCodeDescriptions
+{%- elif table_name == 'ResponseCode' -%}
+ResponseCodeDescriptions
+{%- else -%}{{table_name}}{%- endif -%}
+{% endmacro %}
+{% macro generate_vendoritem_lookup( extension_name, table ) %}
+['{{ description_name( extension_name | replace('Property','Prop') ) }}'] = {
+    {% for code, description in table | dictsort() %}
+        [{{code}}] = '{{description}}',
+    {% endfor %}
+    },
+{% endmacro %}
+{% macro generate_vendor_table( vendorname, table ) %}
+
+local {{vendorname|upper()}}_EXTENSIONS = {
+    {% for extension_name, extension_table in table | dictsort() %}
+    {{ generate_vendoritem_lookup(extension_name, extension_table) }}
+    {% endfor %}
+}
+{% endmacro %}
+{% macro generate_vendor_extensions( table ) %}
+    {% for vendor_name, extension_table in table | dictsort() %}
+    {{ generate_vendor_table(vendor_name, extension_table) }}
+    {% endfor-%}
+
+local VENDORS = {
+    UNKNOWN = 1,
+    {% for vendor_name, extension_table in table | dictsort() %}
+    {{vendor_name | upper() }} = {{ loop.index + 1 }},
+    {%- endfor -%}
+}
+
+local VENDOR_EXTENSIONS = {
+    {% for vendor_name, extension_table in table | dictsort() %}
+    [VENDORS.{{vendor_name | upper() }}] = {{vendor_name|upper()}}_EXTENSIONS,
+    {%- endfor -%}
+}
+
+local vendor_pref_enum = {
+    { 1, "Generic MTP", 0 },
+    {% for vendor_name, extension_table in table | dictsort() %}
+    {  {{ loop.index + 1 }}, '{{vendor_name | title() }}', VENDORS.{{vendor_name | upper() }} },
+    {% endfor %}
+}
+{% endmacro %}

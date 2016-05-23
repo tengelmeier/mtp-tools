@@ -1,0 +1,3155 @@
+{
+    "Command": {
+        "5": {
+            "code": "5", 
+            "description": "NUMPARAMS_MAX", 
+            "name": "NUMPARAMS_MAX"
+        }
+    }, 
+    "Commands": {
+        "0x1002": {
+            "code": "0x1002", 
+            "name": "OPENSESSION", 
+            "parameters": [
+                "SessionID"
+            ]
+        }, 
+        "0x1005": {
+            "code": "0x1005", 
+            "name": "GETSTORAGEINFO", 
+            "parameters": [
+                "StorageID"
+            ]
+        }, 
+        "0x1006": {
+            "code": "0x1006", 
+            "name": "GETNUMOBJECTS", 
+            "parameters": [
+                "StorageID", 
+                "[ObjectFormatCode]", 
+                "[ObjectHandle of Association for which number of children is needed]"
+            ]
+        }, 
+        "0x1007": {
+            "code": "0x1007", 
+            "name": "GETOBJECTHANDLES", 
+            "parameters": [
+                "StorageID", 
+                "[ObjectFormatCode]", 
+                "[ObjectHandle of Association or Hierarchical folder for which a list of children is needed]"
+            ]
+        }, 
+        "0x1008": {
+            "code": "0x1008", 
+            "name": "GETOBJECTINFO", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x1009": {
+            "code": "0x1009", 
+            "name": "GETOBJECT", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x100A": {
+            "code": "0x100A", 
+            "name": "GETTHUMB", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x100B": {
+            "code": "0x100B", 
+            "name": "DELETEOBJECT", 
+            "parameters": [
+                "ObjectHandle", 
+                "[ObjectFormatCode]"
+            ]
+        }, 
+        "0x100C": {
+            "code": "0x100C", 
+            "name": "SENDOBJECTINFO", 
+            "parameters": [
+                "[Destination StorageID on responder]", 
+                "[Parent ObjectHandle on responder where object shall be placed]"
+            ]
+        }, 
+        "0x100E": {
+            "code": "0x100E", 
+            "name": "INITIATECAPTURE", 
+            "parameters": [
+                "[StorageID]", 
+                "[ObjectFormatCode]"
+            ]
+        }, 
+        "0x100F": {
+            "code": "0x100F", 
+            "name": "FORMATSTORE", 
+            "parameters": [
+                "StorageID", 
+                "[FileSystem Format]"
+            ]
+        }, 
+        "0x1011": {
+            "code": "0x1011", 
+            "name": "SELFTEST", 
+            "parameters": [
+                "[SelfTest Type]"
+            ]
+        }, 
+        "0x1012": {
+            "code": "0x1012", 
+            "name": "SETOBJECTPROTECTION", 
+            "parameters": [
+                "ObjectHandle", 
+                "ProtectionStatus"
+            ]
+        }, 
+        "0x1014": {
+            "code": "0x1014", 
+            "name": "GETDEVICEPROPDESC", 
+            "parameters": [
+                "DevicePropCode"
+            ]
+        }, 
+        "0x1015": {
+            "code": "0x1015", 
+            "name": "GETDEVICEPROPVALUE", 
+            "parameters": [
+                "DevicePropCode"
+            ]
+        }, 
+        "0x1016": {
+            "code": "0x1016", 
+            "name": "SETDEVICEPROPVALUE", 
+            "parameters": [
+                "DevicePropCode"
+            ]
+        }, 
+        "0x1017": {
+            "code": "0x1017", 
+            "name": "RESETDEVICEPROPVALUE", 
+            "parameters": [
+                "DevicePropCode"
+            ]
+        }, 
+        "0x1018": {
+            "code": "0x1018", 
+            "name": "TERMINATECAPTURE", 
+            "parameters": [
+                "TransactionID"
+            ]
+        }, 
+        "0x1019": {
+            "code": "0x1019", 
+            "name": "MOVEOBJECT", 
+            "parameters": [
+                "ObjectHandle", 
+                "StorageID of store to move object to", 
+                "ObjectHandle of the new ParentObject"
+            ]
+        }, 
+        "0x101A": {
+            "code": "0x101A", 
+            "name": "COPYOBJECT", 
+            "parameters": [
+                "ObjectHandle", 
+                "StorageID that the newly copied object shall be placed into", 
+                "ObjectHandle of the newly copied object's parent"
+            ]
+        }, 
+        "0x101B": {
+            "code": "0x101B", 
+            "name": "GETPARTIALOBJECT", 
+            "parameters": [
+                "ObjectHandle", 
+                "Offset in bytes", 
+                "Maximum number of bytes to obtain"
+            ]
+        }, 
+        "0x101C": {
+            "code": "0x101C", 
+            "name": "INITIATEOPENCAPTURE", 
+            "parameters": [
+                "[StorageID]", 
+                "[ObjectFormatCode]"
+            ]
+        }, 
+        "0x9302": {
+            "code": "0x9302", 
+            "name": "GETSERVICEINFO", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x9303": {
+            "code": "0x9303", 
+            "name": "GETSERVICECAPABILITIES", 
+            "parameters": [
+                "ServiceID", 
+                "[FormatCode]"
+            ]
+        }, 
+        "0x9304": {
+            "code": "0x9304", 
+            "name": "GETSERVICEPROPERTIES", 
+            "parameters": [
+                "ServiceID", 
+                "[ServicePropCode]"
+            ]
+        }, 
+        "0x9305": {
+            "code": "0x9305", 
+            "name": "GETSERVICEPROPERTYLIST", 
+            "parameters": [
+                "ServiceID", 
+                "[ServicePropCode]"
+            ]
+        }, 
+        "0x9306": {
+            "code": "0x9306", 
+            "name": "SETSERVICEPROPERTYLIST", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x9307": {
+            "code": "0x9307", 
+            "name": "UPDATEOBJECTPROPLIST", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x9308": {
+            "code": "0x9308", 
+            "name": "DELETEOBJECTPROPLIST", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x9309": {
+            "code": "0x9309", 
+            "name": "DELETESERVICEPROPLIST", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x930A": {
+            "code": "0x930A", 
+            "name": "GETFORMATCAPABILITIES", 
+            "parameters": [
+                "[FormatCode]"
+            ]
+        }, 
+        "0x9801": {
+            "code": "0x9801", 
+            "name": "GETOBJECTPROPSSUPPORTED", 
+            "parameters": [
+                "ObjectFormatCode"
+            ]
+        }, 
+        "0x9802": {
+            "code": "0x9802", 
+            "name": "GETOBJECTPROPDESC", 
+            "parameters": [
+                "ObjectPropCode", 
+                "ObjectFormatCode"
+            ]
+        }, 
+        "0x9803": {
+            "code": "0x9803", 
+            "name": "GETOBJECTPROPVALUE", 
+            "parameters": [
+                "ObjectHandle", 
+                "ObjectPropCode"
+            ]
+        }, 
+        "0x9804": {
+            "code": "0x9804", 
+            "name": "SETOBJECTPROPVALUE", 
+            "parameters": [
+                "ObjectHandle", 
+                "ObjectPropCode"
+            ]
+        }, 
+        "0x9805": {
+            "code": "0x9805", 
+            "name": "GETOBJECTPROPLIST", 
+            "parameters": [
+                "ObjectHandle", 
+                "[ObjectFormatCode]", 
+                "ObjectPropCode", 
+                "[ObjectPropGroupCode]", 
+                "[Depth]"
+            ]
+        }, 
+        "0x9807": {
+            "code": "0x9807", 
+            "name": "GETINTERDEPENDENTPROPDESC", 
+            "parameters": [
+                "ObjectFormatCode"
+            ]
+        }, 
+        "0x9808": {
+            "code": "0x9808", 
+            "name": "SENDOBJECTPROPLIST", 
+            "parameters": [
+                "[Destination StorageID on responder]", 
+                "[Parent ObjectHandle on responder where object shall be placed]", 
+                "ObjectFormatCode", 
+                "ObjectSize(most  significant 4 bytes)", 
+                "ObjectSize(least significant 4 bytes)"
+            ]
+        }, 
+        "0x9809": {
+            "code": "0x9809", 
+            "name": "GETFORMATCAPABILITIES", 
+            "parameters": [
+                "[FormatCode]"
+            ]
+        }, 
+        "0x980A": {
+            "code": "0x980A", 
+            "name": "UPDATEOBJECTPROPLIST", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x980B": {
+            "code": "0x980B", 
+            "name": "DELETEOBJECTPROPLIST", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x9810": {
+            "code": "0x9810", 
+            "name": "GETOBJECTREFERENCES", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x9811": {
+            "code": "0x9811", 
+            "name": "SETOBJECTREFERENCES", 
+            "parameters": [
+                "ObjectHandle"
+            ]
+        }, 
+        "0x9901": {
+            "code": "0x9901", 
+            "name": "GETSERVICEINFO", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x9902": {
+            "code": "0x9902", 
+            "name": "GETSERVICECAPABILITIES", 
+            "parameters": [
+                "ServiceID", 
+                "[FormatCode]"
+            ]
+        }, 
+        "0x9903": {
+            "code": "0x9903", 
+            "name": "GETSERVICEPROPERTIES", 
+            "parameters": [
+                "ServiceID", 
+                "[ServicePropCode]"
+            ]
+        }, 
+        "0x9904": {
+            "code": "0x9904", 
+            "name": "GETSERVICEPROPERTYLIST", 
+            "parameters": [
+                "ServiceID", 
+                "[ServicePropCode]"
+            ]
+        }, 
+        "0x9905": {
+            "code": "0x9905", 
+            "name": "SETSERVICEPROPERTYLIST", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x9906": {
+            "code": "0x9906", 
+            "name": "DELETESERVICEPROPLIST", 
+            "parameters": [
+                "ServiceID"
+            ]
+        }, 
+        "0x9910": {
+            "code": "0x9910", 
+            "name": "OPENOBJECTSTREAM", 
+            "parameters": [
+                "ObjectHandle", 
+                "Access", 
+                "[MTU (Initiator)]", 
+                "[Alternative Stream]"
+            ]
+        }, 
+        "0x9911": {
+            "code": "0x9911", 
+            "name": "READOBJECTSTREAM", 
+            "parameters": [
+                "StreamHandle", 
+                "Units", 
+                "Units to read"
+            ]
+        }, 
+        "0x9912": {
+            "code": "0x9912", 
+            "name": "WRITEOBJECTSTREAM", 
+            "parameters": [
+                "StreamHandle"
+            ]
+        }, 
+        "0x9913": {
+            "code": "0x9913", 
+            "name": "SEEKOBJECTSTREAM", 
+            "parameters": [
+                "StreamHandle", 
+                "Offset type", 
+                "Units of offset", 
+                "Offset (most  significant 4 bytes)", 
+                "Offset (least significant 4 bytes)"
+            ]
+        }, 
+        "0x9914": {
+            "code": "0x9914", 
+            "name": "CLOSEOBJECTSTREAM", 
+            "parameters": [
+                "StreamHandle"
+            ]
+        }
+    }, 
+    "Datatype": {
+        "0x0000": {
+            "code": "0x0000", 
+            "description": "Undefined", 
+            "name": "UNDEFINED"
+        }, 
+        "0x0001": {
+            "code": "0x0001", 
+            "description": "Int8", 
+            "name": "INT8"
+        }, 
+        "0x0002": {
+            "code": "0x0002", 
+            "description": "UInt8", 
+            "name": "UINT8"
+        }, 
+        "0x0003": {
+            "code": "0x0003", 
+            "description": "Int16", 
+            "name": "INT16"
+        }, 
+        "0x0004": {
+            "code": "0x0004", 
+            "description": "UInt16", 
+            "name": "UINT16"
+        }, 
+        "0x0005": {
+            "code": "0x0005", 
+            "description": "Int32", 
+            "name": "INT32"
+        }, 
+        "0x0006": {
+            "code": "0x0006", 
+            "description": "UInt32", 
+            "name": "UINT32"
+        }, 
+        "0x0007": {
+            "code": "0x0007", 
+            "description": "Int64", 
+            "name": "INT64"
+        }, 
+        "0x0008": {
+            "code": "0x0008", 
+            "description": "UInt64", 
+            "name": "UINT64"
+        }, 
+        "0x0009": {
+            "code": "0x0009", 
+            "description": "Int128", 
+            "name": "INT128"
+        }, 
+        "0x000A": {
+            "code": "0x000A", 
+            "description": "UInt128", 
+            "name": "UINT128"
+        }, 
+        "0x4000": {
+            "code": "0x4000", 
+            "description": "ARRAYMASK", 
+            "name": "ARRAYMASK"
+        }, 
+        "0x4001": {
+            "code": "0x4001", 
+            "description": "AInt8", 
+            "name": "AINT8"
+        }, 
+        "0x4002": {
+            "code": "0x4002", 
+            "description": "AUInt8", 
+            "name": "AUINT8"
+        }, 
+        "0x4003": {
+            "code": "0x4003", 
+            "description": "AInt16", 
+            "name": "AINT16"
+        }, 
+        "0x4004": {
+            "code": "0x4004", 
+            "description": "AUInt16", 
+            "name": "AUINT16"
+        }, 
+        "0x4005": {
+            "code": "0x4005", 
+            "description": "AInt32", 
+            "name": "AINT32"
+        }, 
+        "0x4006": {
+            "code": "0x4006", 
+            "description": "AUInt32", 
+            "name": "AUINT32"
+        }, 
+        "0x4007": {
+            "code": "0x4007", 
+            "description": "AInt64", 
+            "name": "AINT64"
+        }, 
+        "0x4008": {
+            "code": "0x4008", 
+            "description": "AUInt64", 
+            "name": "AUINT64"
+        }, 
+        "0x4009": {
+            "code": "0x4009", 
+            "description": "AInt128", 
+            "name": "AINT128"
+        }, 
+        "0x400A": {
+            "code": "0x400A", 
+            "description": "AUInt128", 
+            "name": "AUINT128"
+        }, 
+        "0xFFFF": {
+            "code": "0xFFFF", 
+            "description": "String", 
+            "name": "STRING"
+        }
+    }, 
+    "DevicePropertyCode": {
+        "0x0": {
+            "code": "0x0", 
+            "description": "NOTUSED", 
+            "name": "NOTUSED"
+        }, 
+        "0x5000": {
+            "code": "0x5000", 
+            "description": "UNDEFINED", 
+            "name": "UNDEFINED"
+        }, 
+        "0x5001": {
+            "code": "0x5001", 
+            "description": "BATTERYLEVEL", 
+            "name": "BATTERYLEVEL"
+        }, 
+        "0x5002": {
+            "code": "0x5002", 
+            "description": "FUNCTIONMODE", 
+            "name": "FUNCTIONMODE"
+        }, 
+        "0x5003": {
+            "code": "0x5003", 
+            "description": "IMAGESIZE", 
+            "name": "IMAGESIZE"
+        }, 
+        "0x5004": {
+            "code": "0x5004", 
+            "description": "COMPRESSIONSETTING", 
+            "name": "COMPRESSIONSETTING"
+        }, 
+        "0x5005": {
+            "code": "0x5005", 
+            "description": "WHITEBALANCE", 
+            "name": "WHITEBALANCE"
+        }, 
+        "0x5006": {
+            "code": "0x5006", 
+            "description": "RGBGAIN", 
+            "name": "RGBGAIN"
+        }, 
+        "0x5007": {
+            "code": "0x5007", 
+            "description": "FNUMBER", 
+            "name": "FNUMBER"
+        }, 
+        "0x5008": {
+            "code": "0x5008", 
+            "description": "FOCALLENGTH", 
+            "name": "FOCALLENGTH"
+        }, 
+        "0x5009": {
+            "code": "0x5009", 
+            "description": "FOCUSDISTANCE", 
+            "name": "FOCUSDISTANCE"
+        }, 
+        "0x500A": {
+            "code": "0x500A", 
+            "description": "FOCUSMODE", 
+            "name": "FOCUSMODE"
+        }, 
+        "0x500B": {
+            "code": "0x500B", 
+            "description": "EXPOSUREMETERINGMODE", 
+            "name": "EXPOSUREMETERINGMODE"
+        }, 
+        "0x500C": {
+            "code": "0x500C", 
+            "description": "FLASHMODE", 
+            "name": "FLASHMODE"
+        }, 
+        "0x500D": {
+            "code": "0x500D", 
+            "description": "EXPOSURETIME", 
+            "name": "EXPOSURETIME"
+        }, 
+        "0x500E": {
+            "code": "0x500E", 
+            "description": "EXPOSUREPROGRAMMODE", 
+            "name": "EXPOSUREPROGRAMMODE"
+        }, 
+        "0x500F": {
+            "code": "0x500F", 
+            "description": "EXPOSUREINDEX", 
+            "name": "EXPOSUREINDEX"
+        }, 
+        "0x5010": {
+            "code": "0x5010", 
+            "description": "EXPOSURECOMPENSATION", 
+            "name": "EXPOSURECOMPENSATION"
+        }, 
+        "0x5011": {
+            "code": "0x5011", 
+            "description": "DATETIME", 
+            "name": "DATETIME"
+        }, 
+        "0x5012": {
+            "code": "0x5012", 
+            "description": "CAPTUREDELAY", 
+            "name": "CAPTUREDELAY"
+        }, 
+        "0x5013": {
+            "code": "0x5013", 
+            "description": "STILLCAPTUREMODE", 
+            "name": "STILLCAPTUREMODE"
+        }, 
+        "0x5014": {
+            "code": "0x5014", 
+            "description": "CONTRAST", 
+            "name": "CONTRAST"
+        }, 
+        "0x5015": {
+            "code": "0x5015", 
+            "description": "SHARPNESS", 
+            "name": "SHARPNESS"
+        }, 
+        "0x5016": {
+            "code": "0x5016", 
+            "description": "DIGITALZOOM", 
+            "name": "DIGITALZOOM"
+        }, 
+        "0x5017": {
+            "code": "0x5017", 
+            "description": "EFFECTMODE", 
+            "name": "EFFECTMODE"
+        }, 
+        "0x5018": {
+            "code": "0x5018", 
+            "description": "BURSTNUMBER", 
+            "name": "BURSTNUMBER"
+        }, 
+        "0x5019": {
+            "code": "0x5019", 
+            "description": "BURSTINTERVAL", 
+            "name": "BURSTINTERVAL"
+        }, 
+        "0x501A": {
+            "code": "0x501A", 
+            "description": "TIMELAPSENUMBER", 
+            "name": "TIMELAPSENUMBER"
+        }, 
+        "0x501B": {
+            "code": "0x501B", 
+            "description": "TIMELAPSEINTERVAL", 
+            "name": "TIMELAPSEINTERVAL"
+        }, 
+        "0x501C": {
+            "code": "0x501C", 
+            "description": "FOCUSMETERINGMODE", 
+            "name": "FOCUSMETERINGMODE"
+        }, 
+        "0x501D": {
+            "code": "0x501D", 
+            "description": "UPLOADURL", 
+            "name": "UPLOADURL"
+        }, 
+        "0x501E": {
+            "code": "0x501E", 
+            "description": "ARTIST", 
+            "name": "ARTIST"
+        }, 
+        "0x501F": {
+            "code": "0x501F", 
+            "description": "COPYRIGHTINFO", 
+            "name": "COPYRIGHTINFO"
+        }, 
+        "0x5020": {
+            "code": "0x5020", 
+            "description": "RESERVED_FIRST", 
+            "name": "RESERVED_FIRST"
+        }, 
+        "0x5FFF": {
+            "code": "0x5FFF", 
+            "description": "RESERVED_LAST", 
+            "name": "RESERVED_LAST"
+        }, 
+        "0xD000": {
+            "code": "0xD000", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0xD301": {
+            "code": "0xD301", 
+            "description": "FUNCTIONALID", 
+            "name": "FUNCTIONALID"
+        }, 
+        "0xD302": {
+            "code": "0xD302", 
+            "description": "MODELUNIQUEID", 
+            "name": "MODELUNIQUEID"
+        }, 
+        "0xD303": {
+            "code": "0xD303", 
+            "description": "USEDEVICESTAGE", 
+            "name": "USEDEVICESTAGE"
+        }, 
+        "0xD3FF": {
+            "code": "0xD3FF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0xD401": {
+            "code": "0xD401", 
+            "description": "SYNCHRONIZATIONPARTNER", 
+            "name": "SYNCHRONIZATIONPARTNER"
+        }, 
+        "0xD402": {
+            "code": "0xD402", 
+            "description": "DEVICEFRIENDLYNAME", 
+            "name": "DEVICEFRIENDLYNAME"
+        }, 
+        "0xD403": {
+            "code": "0xD403", 
+            "description": "VOLUME", 
+            "name": "VOLUME"
+        }, 
+        "0xD404": {
+            "code": "0xD404", 
+            "description": "CONSUMPTIONFORMATPREFERENCES", 
+            "name": "CONSUMPTIONFORMATPREFERENCES"
+        }, 
+        "0xD405": {
+            "code": "0xD405", 
+            "description": "DEVICEICON", 
+            "name": "DEVICEICON"
+        }, 
+        "0xD406": {
+            "code": "0xD406", 
+            "description": "SESSIONINITIATORVERSIONINFO", 
+            "name": "SESSIONINITIATORVERSIONINFO"
+        }, 
+        "0xD407": {
+            "code": "0xD407", 
+            "description": "PERCEIVEDDEVICETYPE", 
+            "name": "PERCEIVEDDEVICETYPE"
+        }, 
+        "0xD408": {
+            "code": "0xD408", 
+            "description": "FUNCTIONALID", 
+            "name": "FUNCTIONALID"
+        }, 
+        "0xD410": {
+            "code": "0xD410", 
+            "description": "PLAYBACKRATE", 
+            "name": "PLAYBACKRATE"
+        }, 
+        "0xD411": {
+            "code": "0xD411", 
+            "description": "PLAYBACKOBJECT", 
+            "name": "PLAYBACKOBJECT"
+        }, 
+        "0xD412": {
+            "code": "0xD412", 
+            "description": "PLAYBACKCONTAINER", 
+            "name": "PLAYBACKCONTAINER"
+        }, 
+        "0xD413": {
+            "code": "0xD413", 
+            "description": "PLAYBACKPOSITION", 
+            "name": "PLAYBACKPOSITION"
+        }, 
+        "0xFFFFFFFF": {
+            "code": "0xFFFFFFFF", 
+            "description": "ALL", 
+            "name": "ALL"
+        }
+    }, 
+    "Event": {
+        "3": {
+            "code": "3", 
+            "description": "NUMPARAMS_MAX", 
+            "name": "NUMPARAMS_MAX"
+        }
+    }, 
+    "EventCode": {
+        "0x4000": {
+            "code": "0x4000", 
+            "description": "UNDEFINED", 
+            "name": "UNDEFINED"
+        }, 
+        "0x4001": {
+            "code": "0x4001", 
+            "description": "CANCELTRANSACTION", 
+            "name": "CANCELTRANSACTION"
+        }, 
+        "0x4002": {
+            "code": "0x4002", 
+            "description": "OBJECTADDED", 
+            "name": "OBJECTADDED"
+        }, 
+        "0x4003": {
+            "code": "0x4003", 
+            "description": "OBJECTREMOVED", 
+            "name": "OBJECTREMOVED"
+        }, 
+        "0x4004": {
+            "code": "0x4004", 
+            "description": "STOREADDED", 
+            "name": "STOREADDED"
+        }, 
+        "0x4005": {
+            "code": "0x4005", 
+            "description": "STOREREMOVED", 
+            "name": "STOREREMOVED"
+        }, 
+        "0x4006": {
+            "code": "0x4006", 
+            "description": "DEVICEPROPCHANGED", 
+            "name": "DEVICEPROPCHANGED"
+        }, 
+        "0x4007": {
+            "code": "0x4007", 
+            "description": "OBJECTINFOCHANGED", 
+            "name": "OBJECTINFOCHANGED"
+        }, 
+        "0x4008": {
+            "code": "0x4008", 
+            "description": "DEVICEINFOCHANGED", 
+            "name": "DEVICEINFOCHANGED"
+        }, 
+        "0x4009": {
+            "code": "0x4009", 
+            "description": "REQUESTOBJECTTRANSFER", 
+            "name": "REQUESTOBJECTTRANSFER"
+        }, 
+        "0x400A": {
+            "code": "0x400A", 
+            "description": "STOREFULL", 
+            "name": "STOREFULL"
+        }, 
+        "0x400B": {
+            "code": "0x400B", 
+            "description": "DEVICERESET", 
+            "name": "DEVICERESET"
+        }, 
+        "0x400C": {
+            "code": "0x400C", 
+            "description": "STORAGEINFOCHANGED", 
+            "name": "STORAGEINFOCHANGED"
+        }, 
+        "0x400D": {
+            "code": "0x400D", 
+            "description": "CAPTURECOMPLETE", 
+            "name": "CAPTURECOMPLETE"
+        }, 
+        "0x400E": {
+            "code": "0x400E", 
+            "description": "UNREPORTEDSTATUS", 
+            "name": "UNREPORTEDSTATUS"
+        }, 
+        "0x400F": {
+            "code": "0x400F", 
+            "description": "RESERVED_FIRST", 
+            "name": "RESERVED_FIRST"
+        }, 
+        "0x4FFF": {
+            "code": "0x4FFF", 
+            "description": "RESERVED_LAST", 
+            "name": "RESERVED_LAST"
+        }, 
+        "0xC000": {
+            "code": "0xC000", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0xC301": {
+            "code": "0xC301", 
+            "description": "SERVICEADDED", 
+            "name": "SERVICEADDED"
+        }, 
+        "0xC302": {
+            "code": "0xC302", 
+            "description": "SERVICEREMOVED", 
+            "name": "SERVICEREMOVED"
+        }, 
+        "0xC303": {
+            "code": "0xC303", 
+            "description": "SERVICEPROPCHANGED", 
+            "name": "SERVICEPROPCHANGED"
+        }, 
+        "0xC304": {
+            "code": "0xC304", 
+            "description": "METHODCOMPLETE", 
+            "name": "METHODCOMPLETE"
+        }, 
+        "0xC7FF": {
+            "code": "0xC7FF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0xC801": {
+            "code": "0xC801", 
+            "description": "OBJECTPROPCHANGED", 
+            "name": "OBJECTPROPCHANGED"
+        }, 
+        "0xC802": {
+            "code": "0xC802", 
+            "description": "OBJECTPROPDESCCHANGED", 
+            "name": "OBJECTPROPDESCCHANGED"
+        }, 
+        "0xC804": {
+            "code": "0xC804", 
+            "description": "SERVICEADDED", 
+            "name": "SERVICEADDED"
+        }, 
+        "0xC805": {
+            "code": "0xC805", 
+            "description": "SERVICEREMOVED", 
+            "name": "SERVICEREMOVED"
+        }, 
+        "0xC806": {
+            "code": "0xC806", 
+            "description": "SERVICEPROPCHANGED", 
+            "name": "SERVICEPROPCHANGED"
+        }, 
+        "0xC807": {
+            "code": "0xC807", 
+            "description": "METHODCOMPLETE", 
+            "name": "METHODCOMPLETE"
+        }
+    }, 
+    "FormatCode": {
+        "0x0000": {
+            "code": "0x0000", 
+            "description": "NOTUSED", 
+            "name": "NOTUSED"
+        }, 
+        "0x3000": {
+            "code": "0x3000", 
+            "description": "UNDEFINED", 
+            "name": "UNDEFINED"
+        }, 
+        "0x3001": {
+            "code": "0x3001", 
+            "description": "ASSOCIATION", 
+            "name": "ASSOCIATION"
+        }, 
+        "0x3002": {
+            "code": "0x3002", 
+            "description": "SCRIPT", 
+            "name": "SCRIPT"
+        }, 
+        "0x3003": {
+            "code": "0x3003", 
+            "description": "EXECUTABLE", 
+            "name": "EXECUTABLE"
+        }, 
+        "0x3004": {
+            "code": "0x3004", 
+            "description": "TEXT", 
+            "name": "TEXT"
+        }, 
+        "0x3005": {
+            "code": "0x3005", 
+            "description": "HTML", 
+            "name": "HTML"
+        }, 
+        "0x3006": {
+            "code": "0x3006", 
+            "description": "DPOF", 
+            "name": "DPOF"
+        }, 
+        "0x3007": {
+            "code": "0x3007", 
+            "description": "AIFF", 
+            "name": "AIFF"
+        }, 
+        "0x3008": {
+            "code": "0x3008", 
+            "description": "WAVE", 
+            "name": "WAVE"
+        }, 
+        "0x3009": {
+            "code": "0x3009", 
+            "description": "MP3", 
+            "name": "MP3"
+        }, 
+        "0x300A": {
+            "code": "0x300A", 
+            "description": "AVI", 
+            "name": "AVI"
+        }, 
+        "0x300B": {
+            "code": "0x300B", 
+            "description": "MPEG", 
+            "name": "MPEG"
+        }, 
+        "0x300C": {
+            "code": "0x300C", 
+            "description": "ASF", 
+            "name": "ASF"
+        }, 
+        "0x300D": {
+            "code": "0x300D", 
+            "description": "RESERVED_FIRST", 
+            "name": "RESERVED_FIRST"
+        }, 
+        "0x37FF": {
+            "code": "0x37FF", 
+            "description": "RESERVED_LAST", 
+            "name": "RESERVED_LAST"
+        }, 
+        "0x3800": {
+            "code": "0x3800", 
+            "description": "UNDEFINEDIMAGE", 
+            "name": "IMAGE_UNDEFINED"
+        }, 
+        "0x3801": {
+            "code": "0x3801", 
+            "description": "EXIF/JPEG", 
+            "name": "IMAGE_EXIF"
+        }, 
+        "0x3802": {
+            "code": "0x3802", 
+            "description": "TIFF/EP", 
+            "name": "IMAGE_TIFFEP"
+        }, 
+        "0x3803": {
+            "code": "0x3803", 
+            "description": "FLASHPIX", 
+            "name": "IMAGE_FLASHPIX"
+        }, 
+        "0x3804": {
+            "code": "0x3804", 
+            "description": "BMP", 
+            "name": "IMAGE_BMP"
+        }, 
+        "0x3805": {
+            "code": "0x3805", 
+            "description": "CIFF", 
+            "name": "IMAGE_CIFF"
+        }, 
+        "0x3807": {
+            "code": "0x3807", 
+            "description": "GIF", 
+            "name": "IMAGE_GIF"
+        }, 
+        "0x3808": {
+            "code": "0x3808", 
+            "description": "JFIF", 
+            "name": "IMAGE_JFIF"
+        }, 
+        "0x3809": {
+            "code": "0x3809", 
+            "description": "PCD", 
+            "name": "IMAGE_PCD"
+        }, 
+        "0x380A": {
+            "code": "0x380A", 
+            "description": "PICT", 
+            "name": "IMAGE_PICT"
+        }, 
+        "0x380B": {
+            "code": "0x380B", 
+            "description": "PNG", 
+            "name": "IMAGE_PNG"
+        }, 
+        "0x380D": {
+            "code": "0x380D", 
+            "description": "TIFF", 
+            "name": "IMAGE_TIFF"
+        }, 
+        "0x380E": {
+            "code": "0x380E", 
+            "description": "TIFF/IT", 
+            "name": "IMAGE_TIFFIT"
+        }, 
+        "0x380F": {
+            "code": "0x380F", 
+            "description": "JP2", 
+            "name": "IMAGE_JP2"
+        }, 
+        "0x3810": {
+            "code": "0x3810", 
+            "description": "JPX", 
+            "name": "IMAGE_JPX"
+        }, 
+        "0x3811": {
+            "code": "0x3811", 
+            "description": "IMAGE_RESERVED_FIRST", 
+            "name": "IMAGE_RESERVED_FIRST"
+        }, 
+        "0x3FFF": {
+            "code": "0x3FFF", 
+            "description": "IMAGE_RESERVED_LAST", 
+            "name": "IMAGE_RESERVED_LAST"
+        }, 
+        "0xB000": {
+            "code": "0xB000", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0xB7FF": {
+            "code": "0xB7FF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0xB802": {
+            "code": "0xB802", 
+            "description": "UNDEFINEDFIRMWARE", 
+            "name": "UNDEFINEDFIRMWARE"
+        }, 
+        "0xB803": {
+            "code": "0xB803", 
+            "description": "WBMP", 
+            "name": "WBMP"
+        }, 
+        "0xB804": {
+            "code": "0xB804", 
+            "description": "JPEGXR", 
+            "name": "JPEGXR"
+        }, 
+        "0xB881": {
+            "code": "0xB881", 
+            "description": "WINDOWSIMAGEFORMAT", 
+            "name": "WINDOWSIMAGEFORMAT"
+        }, 
+        "0xB900": {
+            "code": "0xB900", 
+            "description": "UNDEFINEDAUDIO", 
+            "name": "UNDEFINEDAUDIO"
+        }, 
+        "0xB901": {
+            "code": "0xB901", 
+            "description": "WMA", 
+            "name": "WMA"
+        }, 
+        "0xB902": {
+            "code": "0xB902", 
+            "description": "OGG", 
+            "name": "OGG"
+        }, 
+        "0xB903": {
+            "code": "0xB903", 
+            "description": "AAC", 
+            "name": "AAC"
+        }, 
+        "0xB904": {
+            "code": "0xB904", 
+            "description": "AUDIBLE", 
+            "name": "AUDIBLE"
+        }, 
+        "0xB906": {
+            "code": "0xB906", 
+            "description": "FLAC", 
+            "name": "FLAC"
+        }, 
+        "0xB907": {
+            "code": "0xB907", 
+            "description": "QCELP", 
+            "name": "QCELP"
+        }, 
+        "0xB908": {
+            "code": "0xB908", 
+            "description": "AMR", 
+            "name": "AMR"
+        }, 
+        "0xB980": {
+            "code": "0xB980", 
+            "description": "UNDEFINEDVIDEO", 
+            "name": "UNDEFINEDVIDEO"
+        }, 
+        "0xB981": {
+            "code": "0xB981", 
+            "description": "WMV", 
+            "name": "WMV"
+        }, 
+        "0xB982": {
+            "code": "0xB982", 
+            "description": "MP4", 
+            "name": "MP4"
+        }, 
+        "0xB983": {
+            "code": "0xB983", 
+            "description": "MP2", 
+            "name": "MP2"
+        }, 
+        "0xB984": {
+            "code": "0xB984", 
+            "description": "3GP", 
+            "name": "3GP"
+        }, 
+        "0xB985": {
+            "code": "0xB985", 
+            "description": "3G2", 
+            "name": "3G2"
+        }, 
+        "0xB986": {
+            "code": "0xB986", 
+            "description": "AVCHD", 
+            "name": "AVCHD"
+        }, 
+        "0xB987": {
+            "code": "0xB987", 
+            "description": "ATSCTS", 
+            "name": "ATSCTS"
+        }, 
+        "0xB988": {
+            "code": "0xB988", 
+            "description": "DVBTS", 
+            "name": "DVBTS"
+        }, 
+        "0xBA00": {
+            "code": "0xBA00", 
+            "description": "UNDEFINEDCOLLECTION", 
+            "name": "UNDEFINEDCOLLECTION"
+        }, 
+        "0xBA01": {
+            "code": "0xBA01", 
+            "description": "ABSTRACTMULTIMEDIAALBUM", 
+            "name": "ABSTRACTMULTIMEDIAALBUM"
+        }, 
+        "0xBA02": {
+            "code": "0xBA02", 
+            "description": "ABSTRACTIMAGEALBUM", 
+            "name": "ABSTRACTIMAGEALBUM"
+        }, 
+        "0xBA03": {
+            "code": "0xBA03", 
+            "description": "ABSTRACTAUDIOALBUM", 
+            "name": "ABSTRACTAUDIOALBUM"
+        }, 
+        "0xBA04": {
+            "code": "0xBA04", 
+            "description": "ABSTRACTVIDEOALBUM", 
+            "name": "ABSTRACTVIDEOALBUM"
+        }, 
+        "0xBA05": {
+            "code": "0xBA05", 
+            "description": "ABSTRACTAUDIOVIDEOPLAYLIST", 
+            "name": "ABSTRACTAUDIOVIDEOPLAYLIST"
+        }, 
+        "0xBA06": {
+            "code": "0xBA06", 
+            "description": "ABSTRACTCONTACTGROUP", 
+            "name": "ABSTRACTCONTACTGROUP"
+        }, 
+        "0xBA07": {
+            "code": "0xBA07", 
+            "description": "ABSTRACTMESSAGEFOLDER", 
+            "name": "ABSTRACTMESSAGEFOLDER"
+        }, 
+        "0xBA08": {
+            "code": "0xBA08", 
+            "description": "ABSTRACTCHAPTEREDPRODUCTION", 
+            "name": "ABSTRACTCHAPTEREDPRODUCTION"
+        }, 
+        "0xBA0B": {
+            "code": "0xBA0B", 
+            "description": "ABSTRACTMEDIACAST", 
+            "name": "ABSTRACTMEDIACAST"
+        }, 
+        "0xBA10": {
+            "code": "0xBA10", 
+            "description": "WPLPLAYLIST", 
+            "name": "WPLPLAYLIST"
+        }, 
+        "0xBA11": {
+            "code": "0xBA11", 
+            "description": "M3UPLAYLIST", 
+            "name": "M3UPLAYLIST"
+        }, 
+        "0xBA12": {
+            "code": "0xBA12", 
+            "description": "MPLPLAYLIST", 
+            "name": "MPLPLAYLIST"
+        }, 
+        "0xBA13": {
+            "code": "0xBA13", 
+            "description": "ASXPLAYLIST", 
+            "name": "ASXPLAYLIST"
+        }, 
+        "0xBA14": {
+            "code": "0xBA14", 
+            "description": "PLSPLAYLIST", 
+            "name": "PLSPLAYLIST"
+        }, 
+        "0xBA80": {
+            "code": "0xBA80", 
+            "description": "UNDEFINEDDOCUMENT", 
+            "name": "UNDEFINEDDOCUMENT"
+        }, 
+        "0xBA81": {
+            "code": "0xBA81", 
+            "description": "ABSTRACTDOCUMENT", 
+            "name": "ABSTRACTDOCUMENT"
+        }, 
+        "0xBA82": {
+            "code": "0xBA82", 
+            "description": "XMLDOCUMENT", 
+            "name": "XMLDOCUMENT"
+        }, 
+        "0xBA83": {
+            "code": "0xBA83", 
+            "description": "MICROSOFTWORDDOCUMENT", 
+            "name": "MICROSOFTWORDDOCUMENT"
+        }, 
+        "0xBA84": {
+            "code": "0xBA84", 
+            "description": "MHTCOMPILEDHTMLDOCUMENT", 
+            "name": "MHTCOMPILEDHTMLDOCUMENT"
+        }, 
+        "0xBA85": {
+            "code": "0xBA85", 
+            "description": "MICROSOFTEXCELSPREADSHEET", 
+            "name": "MICROSOFTEXCELSPREADSHEET"
+        }, 
+        "0xBA86": {
+            "code": "0xBA86", 
+            "description": "MICROSOFTPOWERPOINTDOCUMENT", 
+            "name": "MICROSOFTPOWERPOINTDOCUMENT"
+        }, 
+        "0xBB00": {
+            "code": "0xBB00", 
+            "description": "UNDEFINEDMESSAGE", 
+            "name": "UNDEFINEDMESSAGE"
+        }, 
+        "0xBB01": {
+            "code": "0xBB01", 
+            "description": "ABSTRACTMESSAGE", 
+            "name": "ABSTRACTMESSAGE"
+        }, 
+        "0xBB80": {
+            "code": "0xBB80", 
+            "description": "UNDEFINEDCONTACT", 
+            "name": "UNDEFINEDCONTACT"
+        }, 
+        "0xBB81": {
+            "code": "0xBB81", 
+            "description": "ABSTRACTCONTACT", 
+            "name": "ABSTRACTCONTACT"
+        }, 
+        "0xBB82": {
+            "code": "0xBB82", 
+            "description": "VCARD2", 
+            "name": "VCARD2"
+        }, 
+        "0xBB83": {
+            "code": "0xBB83", 
+            "description": "VCARD3", 
+            "name": "VCARD3"
+        }, 
+        "0xBE00": {
+            "code": "0xBE00", 
+            "description": "UNDEFINEDCALENDARITEM", 
+            "name": "UNDEFINEDCALENDARITEM"
+        }, 
+        "0xBE01": {
+            "code": "0xBE01", 
+            "description": "ABSTRACTCALENDARITEM", 
+            "name": "ABSTRACTCALENDARITEM"
+        }, 
+        "0xBE02": {
+            "code": "0xBE02", 
+            "description": "VCALENDAR1", 
+            "name": "VCALENDAR1"
+        }, 
+        "0xBE03": {
+            "code": "0xBE03", 
+            "description": "VCALENDAR2", 
+            "name": "VCALENDAR2"
+        }, 
+        "0xBE80": {
+            "code": "0xBE80", 
+            "description": "UNDEFINEDWINDOWSEXECUTABLE", 
+            "name": "UNDEFINEDWINDOWSEXECUTABLE"
+        }, 
+        "0xFFFFFFFF": {
+            "code": "0xFFFFFFFF", 
+            "description": "ALLIMAGES", 
+            "name": "ALLIMAGES"
+        }
+    }, 
+    "Formflags": {
+        "0": {
+            "code": "0", 
+            "description": "NONE", 
+            "name": "NONE"
+        }, 
+        "0x81": {
+            "code": "0x81", 
+            "description": "SVCEXT_OBJECTPROP", 
+            "name": "SVCEXT_OBJECTPROP"
+        }, 
+        "0x82": {
+            "code": "0x82", 
+            "description": "SVCEXT_METHODPARAM", 
+            "name": "SVCEXT_METHODPARAM"
+        }, 
+        "0x83": {
+            "code": "0x83", 
+            "description": "SVCEXT_OBJECTID", 
+            "name": "SVCEXT_OBJECTID"
+        }, 
+        "0xff": {
+            "code": "0xff", 
+            "description": "LONGSTRING", 
+            "name": "LONGSTRING"
+        }, 
+        "1": {
+            "code": "1", 
+            "description": "RANGE", 
+            "name": "RANGE"
+        }, 
+        "2": {
+            "code": "2", 
+            "description": "ENUM", 
+            "name": "ENUM"
+        }, 
+        "3": {
+            "code": "3", 
+            "description": "DATETIME", 
+            "name": "DATETIME"
+        }, 
+        "4": {
+            "code": "4", 
+            "description": "FIXEDARRAY", 
+            "name": "FIXEDARRAY"
+        }, 
+        "5": {
+            "code": "5", 
+            "description": "REGEX", 
+            "name": "REGEX"
+        }, 
+        "6": {
+            "code": "6", 
+            "description": "BYTEARRAY", 
+            "name": "BYTEARRAY"
+        }, 
+        "7": {
+            "code": "7", 
+            "description": "OBJECTPROP", 
+            "name": "OBJECTPROP"
+        }, 
+        "8": {
+            "code": "8", 
+            "description": "METHODPARAM", 
+            "name": "METHODPARAM"
+        }, 
+        "9": {
+            "code": "9", 
+            "description": "OBJECTID", 
+            "name": "OBJECTID"
+        }
+    }, 
+    "ObjectPropertyCode": {
+        "0x0": {
+            "code": "0x0", 
+            "description": "NOTUSED", 
+            "name": "NOTUSED"
+        }, 
+        "0xD000": {
+            "code": "0xD000", 
+            "description": "UNDEFINED", 
+            "name": "UNDEFINED"
+        }, 
+        "0xD800": {
+            "code": "0xD800", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0xDBFF": {
+            "code": "0xDBFF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0xDC01": {
+            "code": "0xDC01", 
+            "description": "STORAGEID", 
+            "name": "STORAGEID"
+        }, 
+        "0xDC02": {
+            "code": "0xDC02", 
+            "description": "OBJECTFORMAT", 
+            "name": "OBJECTFORMAT"
+        }, 
+        "0xDC03": {
+            "code": "0xDC03", 
+            "description": "PROTECTIONSTATUS", 
+            "name": "PROTECTIONSTATUS"
+        }, 
+        "0xDC04": {
+            "code": "0xDC04", 
+            "description": "OBJECTSIZE", 
+            "name": "OBJECTSIZE"
+        }, 
+        "0xDC05": {
+            "code": "0xDC05", 
+            "description": "ASSOCIATIONTYPE", 
+            "name": "ASSOCIATIONTYPE"
+        }, 
+        "0xDC06": {
+            "code": "0xDC06", 
+            "description": "ASSOCIATIONDESC", 
+            "name": "ASSOCIATIONDESC"
+        }, 
+        "0xDC07": {
+            "code": "0xDC07", 
+            "description": "OBJECTFILENAME", 
+            "name": "OBJECTFILENAME"
+        }, 
+        "0xDC08": {
+            "code": "0xDC08", 
+            "description": "DATECREATED", 
+            "name": "DATECREATED"
+        }, 
+        "0xDC09": {
+            "code": "0xDC09", 
+            "description": "DATEMODIFIED", 
+            "name": "DATEMODIFIED"
+        }, 
+        "0xDC0A": {
+            "code": "0xDC0A", 
+            "description": "KEYWORDS", 
+            "name": "KEYWORDS"
+        }, 
+        "0xDC0B": {
+            "code": "0xDC0B", 
+            "description": "PARENT", 
+            "name": "PARENT"
+        }, 
+        "0xDC0C": {
+            "code": "0xDC0C", 
+            "description": "ALLOWEDFOLDERCONTENTS", 
+            "name": "ALLOWEDFOLDERCONTENTS"
+        }, 
+        "0xDC0D": {
+            "code": "0xDC0D", 
+            "description": "HIDDEN", 
+            "name": "HIDDEN"
+        }, 
+        "0xDC0E": {
+            "code": "0xDC0E", 
+            "description": "SYSTEMOBJECT", 
+            "name": "SYSTEMOBJECT"
+        }, 
+        "0xDC41": {
+            "code": "0xDC41", 
+            "description": "PERSISTENTUNIQUEOBJECTIDENTIFIER", 
+            "name": "PERSISTENTUNIQUEOBJECTIDENTIFIER"
+        }, 
+        "0xDC42": {
+            "code": "0xDC42", 
+            "description": "SYNCID", 
+            "name": "SYNCID"
+        }, 
+        "0xDC43": {
+            "code": "0xDC43", 
+            "description": "PROPERTYBAG", 
+            "name": "PROPERTYBAG"
+        }, 
+        "0xDC44": {
+            "code": "0xDC44", 
+            "description": "NAME", 
+            "name": "NAME"
+        }, 
+        "0xDC45": {
+            "code": "0xDC45", 
+            "description": "CREATEDBY", 
+            "name": "CREATEDBY"
+        }, 
+        "0xDC46": {
+            "code": "0xDC46", 
+            "description": "ARTIST", 
+            "name": "ARTIST"
+        }, 
+        "0xDC47": {
+            "code": "0xDC47", 
+            "description": "DATEAUTHORED", 
+            "name": "DATEAUTHORED"
+        }, 
+        "0xDC48": {
+            "code": "0xDC48", 
+            "description": "DESCRIPTION", 
+            "name": "DESCRIPTION"
+        }, 
+        "0xDC49": {
+            "code": "0xDC49", 
+            "description": "URLREFERENCE", 
+            "name": "URLREFERENCE"
+        }, 
+        "0xDC4A": {
+            "code": "0xDC4A", 
+            "description": "LANGUAGELOCALE", 
+            "name": "LANGUAGELOCALE"
+        }, 
+        "0xDC4B": {
+            "code": "0xDC4B", 
+            "description": "COPYRIGHTINFORMATION", 
+            "name": "COPYRIGHTINFORMATION"
+        }, 
+        "0xDC4C": {
+            "code": "0xDC4C", 
+            "description": "SOURCE", 
+            "name": "SOURCE"
+        }, 
+        "0xDC4D": {
+            "code": "0xDC4D", 
+            "description": "ORIGINLOCATION", 
+            "name": "ORIGINLOCATION"
+        }, 
+        "0xDC4E": {
+            "code": "0xDC4E", 
+            "description": "DATEADDED", 
+            "name": "DATEADDED"
+        }, 
+        "0xDC4F": {
+            "code": "0xDC4F", 
+            "description": "NONCONSUMABLE", 
+            "name": "NONCONSUMABLE"
+        }, 
+        "0xDC50": {
+            "code": "0xDC50", 
+            "description": "CORRUPTUNPLAYABLE", 
+            "name": "CORRUPTUNPLAYABLE"
+        }, 
+        "0xDC51": {
+            "code": "0xDC51", 
+            "description": "PRODUCERSERIALNUMBER", 
+            "name": "PRODUCERSERIALNUMBER"
+        }, 
+        "0xDC81": {
+            "code": "0xDC81", 
+            "description": "REPRESENTATIVESAMPLEFORMAT", 
+            "name": "REPRESENTATIVESAMPLEFORMAT"
+        }, 
+        "0xDC82": {
+            "code": "0xDC82", 
+            "description": "REPRESENTATIVESAMPLESIZE", 
+            "name": "REPRESENTATIVESAMPLESIZE"
+        }, 
+        "0xDC83": {
+            "code": "0xDC83", 
+            "description": "REPRESENTATIVESAMPLEHEIGHT", 
+            "name": "REPRESENTATIVESAMPLEHEIGHT"
+        }, 
+        "0xDC84": {
+            "code": "0xDC84", 
+            "description": "REPRESENTATIVESAMPLEWIDTH", 
+            "name": "REPRESENTATIVESAMPLEWIDTH"
+        }, 
+        "0xDC85": {
+            "code": "0xDC85", 
+            "description": "REPRESENTATIVESAMPLEDURATION", 
+            "name": "REPRESENTATIVESAMPLEDURATION"
+        }, 
+        "0xDC86": {
+            "code": "0xDC86", 
+            "description": "REPRESENTATIVESAMPLEDATA", 
+            "name": "REPRESENTATIVESAMPLEDATA"
+        }, 
+        "0xDC87": {
+            "code": "0xDC87", 
+            "description": "WIDTH", 
+            "name": "WIDTH"
+        }, 
+        "0xDC88": {
+            "code": "0xDC88", 
+            "description": "HEIGHT", 
+            "name": "HEIGHT"
+        }, 
+        "0xDC89": {
+            "code": "0xDC89", 
+            "description": "DURATION", 
+            "name": "DURATION"
+        }, 
+        "0xDC8A": {
+            "code": "0xDC8A", 
+            "description": "USERRATING", 
+            "name": "USERRATING"
+        }, 
+        "0xDC8B": {
+            "code": "0xDC8B", 
+            "description": "TRACK", 
+            "name": "TRACK"
+        }, 
+        "0xDC8C": {
+            "code": "0xDC8C", 
+            "description": "GENRE", 
+            "name": "GENRE"
+        }, 
+        "0xDC8D": {
+            "code": "0xDC8D", 
+            "description": "CREDITS", 
+            "name": "CREDITS"
+        }, 
+        "0xDC8E": {
+            "code": "0xDC8E", 
+            "description": "LYRICS", 
+            "name": "LYRICS"
+        }, 
+        "0xDC8F": {
+            "code": "0xDC8F", 
+            "description": "SUBSCRIPTIONCONTENTID", 
+            "name": "SUBSCRIPTIONCONTENTID"
+        }, 
+        "0xDC90": {
+            "code": "0xDC90", 
+            "description": "PRODUCEDBY", 
+            "name": "PRODUCEDBY"
+        }, 
+        "0xDC91": {
+            "code": "0xDC91", 
+            "description": "USECOUNT", 
+            "name": "USECOUNT"
+        }, 
+        "0xDC92": {
+            "code": "0xDC92", 
+            "description": "SKIPCOUNT", 
+            "name": "SKIPCOUNT"
+        }, 
+        "0xDC93": {
+            "code": "0xDC93", 
+            "description": "LASTACCESSED", 
+            "name": "LASTACCESSED"
+        }, 
+        "0xDC94": {
+            "code": "0xDC94", 
+            "description": "PARENTALRATING", 
+            "name": "PARENTALRATING"
+        }, 
+        "0xDC95": {
+            "code": "0xDC95", 
+            "description": "METAGENRE", 
+            "name": "METAGENRE"
+        }, 
+        "0xDC96": {
+            "code": "0xDC96", 
+            "description": "COMPOSER", 
+            "name": "COMPOSER"
+        }, 
+        "0xDC97": {
+            "code": "0xDC97", 
+            "description": "EFFECTIVERATING", 
+            "name": "EFFECTIVERATING"
+        }, 
+        "0xDC98": {
+            "code": "0xDC98", 
+            "description": "SUBTITLE", 
+            "name": "SUBTITLE"
+        }, 
+        "0xDC99": {
+            "code": "0xDC99", 
+            "description": "ORIGINALRELEASEDATE", 
+            "name": "ORIGINALRELEASEDATE"
+        }, 
+        "0xDC9A": {
+            "code": "0xDC9A", 
+            "description": "ALBUMNAME", 
+            "name": "ALBUMNAME"
+        }, 
+        "0xDC9B": {
+            "code": "0xDC9B", 
+            "description": "ALBUMARTIST", 
+            "name": "ALBUMARTIST"
+        }, 
+        "0xDC9C": {
+            "code": "0xDC9C", 
+            "description": "MOOD", 
+            "name": "MOOD"
+        }, 
+        "0xDC9D": {
+            "code": "0xDC9D", 
+            "description": "DRMPROTECTION", 
+            "name": "DRMPROTECTION"
+        }, 
+        "0xDC9E": {
+            "code": "0xDC9E", 
+            "description": "SUBDESCRIPTION", 
+            "name": "SUBDESCRIPTION"
+        }, 
+        "0xDCD1": {
+            "code": "0xDCD1", 
+            "description": "ISCROPPED", 
+            "name": "ISCROPPED"
+        }, 
+        "0xDCD2": {
+            "code": "0xDCD2", 
+            "description": "ISCOLOURCORRECTED", 
+            "name": "ISCOLOURCORRECTED"
+        }, 
+        "0xDCD3": {
+            "code": "0xDCD3", 
+            "description": "IMAGEBITDEPTH", 
+            "name": "IMAGEBITDEPTH"
+        }, 
+        "0xDCD4": {
+            "code": "0xDCD4", 
+            "description": "FNUMBER", 
+            "name": "FNUMBER"
+        }, 
+        "0xDCD5": {
+            "code": "0xDCD5", 
+            "description": "EXPOSURETIME", 
+            "name": "EXPOSURETIME"
+        }, 
+        "0xDCD6": {
+            "code": "0xDCD6", 
+            "description": "EXPOSUREINDEX", 
+            "name": "EXPOSUREINDEX"
+        }, 
+        "0xDCE0": {
+            "code": "0xDCE0", 
+            "description": "DISPLAYNAME", 
+            "name": "DISPLAYNAME"
+        }, 
+        "0xDCE1": {
+            "code": "0xDCE1", 
+            "description": "BODYTEXT", 
+            "name": "BODYTEXT"
+        }, 
+        "0xDCE2": {
+            "code": "0xDCE2", 
+            "description": "SUBJECT", 
+            "name": "SUBJECT"
+        }, 
+        "0xDCE3": {
+            "code": "0xDCE3", 
+            "description": "PRIORITY", 
+            "name": "PRIORITY"
+        }, 
+        "0xDD00": {
+            "code": "0xDD00", 
+            "description": "GIVENNAME", 
+            "name": "GIVENNAME"
+        }, 
+        "0xDD01": {
+            "code": "0xDD01", 
+            "description": "MIDDLENAMES", 
+            "name": "MIDDLENAMES"
+        }, 
+        "0xDD02": {
+            "code": "0xDD02", 
+            "description": "FAMILYNAME", 
+            "name": "FAMILYNAME"
+        }, 
+        "0xDD03": {
+            "code": "0xDD03", 
+            "description": "PREFIX", 
+            "name": "PREFIX"
+        }, 
+        "0xDD04": {
+            "code": "0xDD04", 
+            "description": "SUFFIX", 
+            "name": "SUFFIX"
+        }, 
+        "0xDD05": {
+            "code": "0xDD05", 
+            "description": "PHONETICGIVENNAME", 
+            "name": "PHONETICGIVENNAME"
+        }, 
+        "0xDD06": {
+            "code": "0xDD06", 
+            "description": "PHONETICFAMILYNAME", 
+            "name": "PHONETICFAMILYNAME"
+        }, 
+        "0xDD07": {
+            "code": "0xDD07", 
+            "description": "EMAILPRIMARY", 
+            "name": "EMAILPRIMARY"
+        }, 
+        "0xDD08": {
+            "code": "0xDD08", 
+            "description": "EMAILPERSONAL1", 
+            "name": "EMAILPERSONAL1"
+        }, 
+        "0xDD09": {
+            "code": "0xDD09", 
+            "description": "EMAILPERSONAL2", 
+            "name": "EMAILPERSONAL2"
+        }, 
+        "0xDD0A": {
+            "code": "0xDD0A", 
+            "description": "EMAILBUSINESS1", 
+            "name": "EMAILBUSINESS1"
+        }, 
+        "0xDD0B": {
+            "code": "0xDD0B", 
+            "description": "EMAILBUSINESS2", 
+            "name": "EMAILBUSINESS2"
+        }, 
+        "0xDD0C": {
+            "code": "0xDD0C", 
+            "description": "EMAILOTHERS", 
+            "name": "EMAILOTHERS"
+        }, 
+        "0xDD0D": {
+            "code": "0xDD0D", 
+            "description": "PHONENUMBERPRIMARY", 
+            "name": "PHONENUMBERPRIMARY"
+        }, 
+        "0xDD0E": {
+            "code": "0xDD0E", 
+            "description": "PHONENUMBERPERSONAL", 
+            "name": "PHONENUMBERPERSONAL"
+        }, 
+        "0xDD0F": {
+            "code": "0xDD0F", 
+            "description": "PHONENUMBERPERSONAL2", 
+            "name": "PHONENUMBERPERSONAL2"
+        }, 
+        "0xDD10": {
+            "code": "0xDD10", 
+            "description": "PHONENUMBERBUSINESS", 
+            "name": "PHONENUMBERBUSINESS"
+        }, 
+        "0xDD11": {
+            "code": "0xDD11", 
+            "description": "PHONENUMBERBUSINESS2", 
+            "name": "PHONENUMBERBUSINESS2"
+        }, 
+        "0xDD12": {
+            "code": "0xDD12", 
+            "description": "PHONENUMBERMOBIL", 
+            "name": "PHONENUMBERMOBIL"
+        }, 
+        "0xDD13": {
+            "code": "0xDD13", 
+            "description": "PHONENUMBERMOBIL2", 
+            "name": "PHONENUMBERMOBIL2"
+        }, 
+        "0xDD14": {
+            "code": "0xDD14", 
+            "description": "FAXNUMBERPRIMARY", 
+            "name": "FAXNUMBERPRIMARY"
+        }, 
+        "0xDD15": {
+            "code": "0xDD15", 
+            "description": "FAXNUMBERPERSONAL", 
+            "name": "FAXNUMBERPERSONAL"
+        }, 
+        "0xDD16": {
+            "code": "0xDD16", 
+            "description": "FAXNUMBERBUSINESS", 
+            "name": "FAXNUMBERBUSINESS"
+        }, 
+        "0xDD17": {
+            "code": "0xDD17", 
+            "description": "PAGERNUMBER", 
+            "name": "PAGERNUMBER"
+        }, 
+        "0xDD18": {
+            "code": "0xDD18", 
+            "description": "PHONENUMBEROTHERS", 
+            "name": "PHONENUMBEROTHERS"
+        }, 
+        "0xDD19": {
+            "code": "0xDD19", 
+            "description": "PRIMARYWEBADDRESS", 
+            "name": "PRIMARYWEBADDRESS"
+        }, 
+        "0xDD1A": {
+            "code": "0xDD1A", 
+            "description": "PERSONALWEBADDRESS", 
+            "name": "PERSONALWEBADDRESS"
+        }, 
+        "0xDD1B": {
+            "code": "0xDD1B", 
+            "description": "BUSINESSWEBADDRESS", 
+            "name": "BUSINESSWEBADDRESS"
+        }, 
+        "0xDD1C": {
+            "code": "0xDD1C", 
+            "description": "INSTANCEMESSENGERADDRESS", 
+            "name": "INSTANCEMESSENGERADDRESS"
+        }, 
+        "0xDD1D": {
+            "code": "0xDD1D", 
+            "description": "INSTANCEMESSENGERADDRESS2", 
+            "name": "INSTANCEMESSENGERADDRESS2"
+        }, 
+        "0xDD1E": {
+            "code": "0xDD1E", 
+            "description": "INSTANCEMESSENGERADDRESS3", 
+            "name": "INSTANCEMESSENGERADDRESS3"
+        }, 
+        "0xDD1F": {
+            "code": "0xDD1F", 
+            "description": "POSTALADDRESSPERSONALFULL", 
+            "name": "POSTALADDRESSPERSONALFULL"
+        }, 
+        "0xDD20": {
+            "code": "0xDD20", 
+            "description": "POSTALADDRESSPERSONALLINE1", 
+            "name": "POSTALADDRESSPERSONALLINE1"
+        }, 
+        "0xDD21": {
+            "code": "0xDD21", 
+            "description": "POSTALADDRESSPERSONALLINE2", 
+            "name": "POSTALADDRESSPERSONALLINE2"
+        }, 
+        "0xDD22": {
+            "code": "0xDD22", 
+            "description": "POSTALADDRESSPERSONALCITY", 
+            "name": "POSTALADDRESSPERSONALCITY"
+        }, 
+        "0xDD23": {
+            "code": "0xDD23", 
+            "description": "POSTALADDRESSPERSONALREGION", 
+            "name": "POSTALADDRESSPERSONALREGION"
+        }, 
+        "0xDD24": {
+            "code": "0xDD24", 
+            "description": "POSTALADDRESSPERSONALPOSTALCODE", 
+            "name": "POSTALADDRESSPERSONALPOSTALCODE"
+        }, 
+        "0xDD25": {
+            "code": "0xDD25", 
+            "description": "POSTALADDRESSPERSONALCOUNTRY", 
+            "name": "POSTALADDRESSPERSONALCOUNTRY"
+        }, 
+        "0xDD26": {
+            "code": "0xDD26", 
+            "description": "POSTALADDRESSBUSINESSFULL", 
+            "name": "POSTALADDRESSBUSINESSFULL"
+        }, 
+        "0xDD27": {
+            "code": "0xDD27", 
+            "description": "POSTALADDRESSBUSINESSLINE1", 
+            "name": "POSTALADDRESSBUSINESSLINE1"
+        }, 
+        "0xDD28": {
+            "code": "0xDD28", 
+            "description": "POSTALADDRESSBUSINESSLINE2", 
+            "name": "POSTALADDRESSBUSINESSLINE2"
+        }, 
+        "0xDD29": {
+            "code": "0xDD29", 
+            "description": "POSTALADDRESSBUSINESSCITY", 
+            "name": "POSTALADDRESSBUSINESSCITY"
+        }, 
+        "0xDD2A": {
+            "code": "0xDD2A", 
+            "description": "POSTALADDRESSBUSINESSREGION", 
+            "name": "POSTALADDRESSBUSINESSREGION"
+        }, 
+        "0xDD2B": {
+            "code": "0xDD2B", 
+            "description": "POSTALADDRESSBUSINESSPOSTALCODE", 
+            "name": "POSTALADDRESSBUSINESSPOSTALCODE"
+        }, 
+        "0xDD2C": {
+            "code": "0xDD2C", 
+            "description": "POSTALADDRESSBUSINESSCOUNTRY", 
+            "name": "POSTALADDRESSBUSINESSCOUNTRY"
+        }, 
+        "0xDD2D": {
+            "code": "0xDD2D", 
+            "description": "POSTALADDRESSOTHERFULL", 
+            "name": "POSTALADDRESSOTHERFULL"
+        }, 
+        "0xDD2E": {
+            "code": "0xDD2E", 
+            "description": "POSTALADDRESSOTHERLINE1", 
+            "name": "POSTALADDRESSOTHERLINE1"
+        }, 
+        "0xDD2F": {
+            "code": "0xDD2F", 
+            "description": "POSTALADDRESSOTHERLINE2", 
+            "name": "POSTALADDRESSOTHERLINE2"
+        }, 
+        "0xDD30": {
+            "code": "0xDD30", 
+            "description": "POSTALADDRESSOTHERCITY", 
+            "name": "POSTALADDRESSOTHERCITY"
+        }, 
+        "0xDD31": {
+            "code": "0xDD31", 
+            "description": "POSTALADDRESSOTHERREGION", 
+            "name": "POSTALADDRESSOTHERREGION"
+        }, 
+        "0xDD32": {
+            "code": "0xDD32", 
+            "description": "POSTALADDRESSOTHERPOSTALCODE", 
+            "name": "POSTALADDRESSOTHERPOSTALCODE"
+        }, 
+        "0xDD33": {
+            "code": "0xDD33", 
+            "description": "POSTALADDRESSOTHERCOUNTRY", 
+            "name": "POSTALADDRESSOTHERCOUNTRY"
+        }, 
+        "0xDD34": {
+            "code": "0xDD34", 
+            "description": "ORGANIZATIONNAME", 
+            "name": "ORGANIZATIONNAME"
+        }, 
+        "0xDD35": {
+            "code": "0xDD35", 
+            "description": "PHONETICORGANIZATIONNAME", 
+            "name": "PHONETICORGANIZATIONNAME"
+        }, 
+        "0xDD36": {
+            "code": "0xDD36", 
+            "description": "ROLE", 
+            "name": "ROLE"
+        }, 
+        "0xDD37": {
+            "code": "0xDD37", 
+            "description": "BIRTHDAY", 
+            "name": "BIRTHDAY"
+        }, 
+        "0xDD40": {
+            "code": "0xDD40", 
+            "description": "MESSAGETO", 
+            "name": "MESSAGETO"
+        }, 
+        "0xDD41": {
+            "code": "0xDD41", 
+            "description": "MESSAGECC", 
+            "name": "MESSAGECC"
+        }, 
+        "0xDD42": {
+            "code": "0xDD42", 
+            "description": "MESSAGEBCC", 
+            "name": "MESSAGEBCC"
+        }, 
+        "0xDD43": {
+            "code": "0xDD43", 
+            "description": "MESSAGEREAD", 
+            "name": "MESSAGEREAD"
+        }, 
+        "0xDD44": {
+            "code": "0xDD44", 
+            "description": "MESSAGERECEIVETIME", 
+            "name": "MESSAGERECEIVETIME"
+        }, 
+        "0xDD45": {
+            "code": "0xDD45", 
+            "description": "MESSAGESENDER", 
+            "name": "MESSAGESENDER"
+        }, 
+        "0xDD50": {
+            "code": "0xDD50", 
+            "description": "ACTIVITYBEGINTIME", 
+            "name": "ACTIVITYBEGINTIME"
+        }, 
+        "0xDD51": {
+            "code": "0xDD51", 
+            "description": "ACTIVITYENDTIME", 
+            "name": "ACTIVITYENDTIME"
+        }, 
+        "0xDD52": {
+            "code": "0xDD52", 
+            "description": "ACTIVITYLOCATION", 
+            "name": "ACTIVITYLOCATION"
+        }, 
+        "0xDD54": {
+            "code": "0xDD54", 
+            "description": "ACTIVITYREQUIREDATTENDEES", 
+            "name": "ACTIVITYREQUIREDATTENDEES"
+        }, 
+        "0xDD55": {
+            "code": "0xDD55", 
+            "description": "ACTIVITYOPTIONALATTENDEES", 
+            "name": "ACTIVITYOPTIONALATTENDEES"
+        }, 
+        "0xDD56": {
+            "code": "0xDD56", 
+            "description": "ACTIVITYRESOURCES", 
+            "name": "ACTIVITYRESOURCES"
+        }, 
+        "0xDD57": {
+            "code": "0xDD57", 
+            "description": "ACTIVITYACCEPTEDED", 
+            "name": "ACTIVITYACCEPTEDED"
+        }, 
+        "0xDD58": {
+            "code": "0xDD58", 
+            "description": "ACTIVITYTENTATIVE", 
+            "name": "ACTIVITYTENTATIVE"
+        }, 
+        "0xDD59": {
+            "code": "0xDD59", 
+            "description": "ACTIVITYDECLINED", 
+            "name": "ACTIVITYDECLINED"
+        }, 
+        "0xDD5A": {
+            "code": "0xDD5A", 
+            "description": "ACTIVITYREMINDERTIME", 
+            "name": "ACTIVITYREMINDERTIME"
+        }, 
+        "0xDD5B": {
+            "code": "0xDD5B", 
+            "description": "ACTIVITYOWNER", 
+            "name": "ACTIVITYOWNER"
+        }, 
+        "0xDD5C": {
+            "code": "0xDD5C", 
+            "description": "ACTIVITYSTATUS", 
+            "name": "ACTIVITYSTATUS"
+        }, 
+        "0xDD5D": {
+            "code": "0xDD5D", 
+            "description": "OWNER", 
+            "name": "OWNER"
+        }, 
+        "0xDD5E": {
+            "code": "0xDD5E", 
+            "description": "EDITOR", 
+            "name": "EDITOR"
+        }, 
+        "0xDD5F": {
+            "code": "0xDD5F", 
+            "description": "WEBMASTER", 
+            "name": "WEBMASTER"
+        }, 
+        "0xDD60": {
+            "code": "0xDD60", 
+            "description": "URLSOURCE", 
+            "name": "URLSOURCE"
+        }, 
+        "0xDD61": {
+            "code": "0xDD61", 
+            "description": "URLDESTINATION", 
+            "name": "URLDESTINATION"
+        }, 
+        "0xDD62": {
+            "code": "0xDD62", 
+            "description": "TIME_BOOKMARK", 
+            "name": "TIME_BOOKMARK"
+        }, 
+        "0xDD63": {
+            "code": "0xDD63", 
+            "description": "OBJECT_BOOKMARK", 
+            "name": "OBJECT_BOOKMARK"
+        }, 
+        "0xDD64": {
+            "code": "0xDD64", 
+            "description": "BYTE_BOOKMARK", 
+            "name": "BYTE_BOOKMARK"
+        }, 
+        "0xDD65": {
+            "code": "0xDD65", 
+            "description": "DATA_OFFSET", 
+            "name": "DATA_OFFSET"
+        }, 
+        "0xDD66": {
+            "code": "0xDD66", 
+            "description": "DATA_LENGTH", 
+            "name": "DATA_LENGTH"
+        }, 
+        "0xDD67": {
+            "code": "0xDD67", 
+            "description": "DATA_UNITS", 
+            "name": "DATA_UNITS"
+        }, 
+        "0xDD68": {
+            "code": "0xDD68", 
+            "description": "DATA_REFERENCED_OBJECT_RESOURCE", 
+            "name": "DATA_REFERENCED_OBJECT_RESOURCE"
+        }, 
+        "0xDD69": {
+            "code": "0xDD69", 
+            "description": "BACK_REFERENCES", 
+            "name": "BACK_REFERENCES"
+        }, 
+        "0xDD70": {
+            "code": "0xDD70", 
+            "description": "LASTBUILDDATE", 
+            "name": "LASTBUILDDATE"
+        }, 
+        "0xDD71": {
+            "code": "0xDD71", 
+            "description": "TIMETOLIVE", 
+            "name": "TIMETOLIVE"
+        }, 
+        "0xDD72": {
+            "code": "0xDD72", 
+            "description": "MEDIAGUID", 
+            "name": "MEDIAGUID"
+        }, 
+        "0xDE91": {
+            "code": "0xDE91", 
+            "description": "TOTALBITRATE", 
+            "name": "TOTALBITRATE"
+        }, 
+        "0xDE92": {
+            "code": "0xDE92", 
+            "description": "BITRATETYPE", 
+            "name": "BITRATETYPE"
+        }, 
+        "0xDE93": {
+            "code": "0xDE93", 
+            "description": "SAMPLERATE", 
+            "name": "SAMPLERATE"
+        }, 
+        "0xDE94": {
+            "code": "0xDE94", 
+            "description": "NUMBEROFCHANNELS", 
+            "name": "NUMBEROFCHANNELS"
+        }, 
+        "0xDE95": {
+            "code": "0xDE95", 
+            "description": "AUDIOBITDEPTH", 
+            "name": "AUDIOBITDEPTH"
+        }, 
+        "0xDE96": {
+            "code": "0xDE96", 
+            "description": "BLOCKALIGNMENT", 
+            "name": "BLOCKALIGNMENT"
+        }, 
+        "0xDE97": {
+            "code": "0xDE97", 
+            "description": "SCANTYPE", 
+            "name": "SCANTYPE"
+        }, 
+        "0xDE98": {
+            "code": "0xDE98", 
+            "description": "COLOURRANGE", 
+            "name": "COLOURRANGE"
+        }, 
+        "0xDE99": {
+            "code": "0xDE99", 
+            "description": "AUDIOWAVECODEC", 
+            "name": "AUDIOWAVECODEC"
+        }, 
+        "0xDE9A": {
+            "code": "0xDE9A", 
+            "description": "AUDIOBITRATE", 
+            "name": "AUDIOBITRATE"
+        }, 
+        "0xDE9B": {
+            "code": "0xDE9B", 
+            "description": "VIDEOFOURCCCODEC", 
+            "name": "VIDEOFOURCCCODEC"
+        }, 
+        "0xDE9C": {
+            "code": "0xDE9C", 
+            "description": "VIDEOBITRATE", 
+            "name": "VIDEOBITRATE"
+        }, 
+        "0xDE9D": {
+            "code": "0xDE9D", 
+            "description": "FRAMESPERMILLISECOND", 
+            "name": "FRAMESPERMILLISECOND"
+        }, 
+        "0xDE9E": {
+            "code": "0xDE9E", 
+            "description": "KEYFRAMEDISTANCE", 
+            "name": "KEYFRAMEDISTANCE"
+        }, 
+        "0xDE9F": {
+            "code": "0xDE9F", 
+            "description": "BUFFERSIZE", 
+            "name": "BUFFERSIZE"
+        }, 
+        "0xDEA0": {
+            "code": "0xDEA0", 
+            "description": "ENCODINGQUALITY", 
+            "name": "ENCODINGQUALITY"
+        }, 
+        "0xDEA1": {
+            "code": "0xDEA1", 
+            "description": "ENCODINGPROFILE", 
+            "name": "ENCODINGPROFILE"
+        }, 
+        "0xDEA2": {
+            "code": "0xDEA2", 
+            "description": "AUDIOENCODINGPROFILE", 
+            "name": "AUDIOENCODINGPROFILE"
+        }, 
+        "0xFFFFFFFF": {
+            "code": "0xFFFFFFFF", 
+            "description": "ALL", 
+            "name": "ALL"
+        }
+    }, 
+    "OpCode": {
+        "0x1000": {
+            "code": "0x1000", 
+            "description": "Undefined", 
+            "name": "UNDEFINED"
+        }, 
+        "0x1001": {
+            "code": "0x1001", 
+            "description": "GetDeviceInfo", 
+            "name": "GETDEVICEINFO"
+        }, 
+        "0x1002": {
+            "code": "0x1002", 
+            "description": "OpenSession", 
+            "name": "OPENSESSION"
+        }, 
+        "0x1003": {
+            "code": "0x1003", 
+            "description": "CloseSession", 
+            "name": "CLOSESESSION"
+        }, 
+        "0x1004": {
+            "code": "0x1004", 
+            "description": "GetStorageIDs", 
+            "name": "GETSTORAGEIDS"
+        }, 
+        "0x1005": {
+            "code": "0x1005", 
+            "description": "GetStorageInfo", 
+            "name": "GETSTORAGEINFO"
+        }, 
+        "0x1006": {
+            "code": "0x1006", 
+            "description": "GetNumObjects", 
+            "name": "GETNUMOBJECTS"
+        }, 
+        "0x1007": {
+            "code": "0x1007", 
+            "description": "GetObjectHandles", 
+            "name": "GETOBJECTHANDLES"
+        }, 
+        "0x1008": {
+            "code": "0x1008", 
+            "description": "GetObjectInfo", 
+            "name": "GETOBJECTINFO"
+        }, 
+        "0x1009": {
+            "code": "0x1009", 
+            "description": "GetObject", 
+            "name": "GETOBJECT"
+        }, 
+        "0x100A": {
+            "code": "0x100A", 
+            "description": "GetThumb", 
+            "name": "GETTHUMB"
+        }, 
+        "0x100B": {
+            "code": "0x100B", 
+            "description": "DeleteObject", 
+            "name": "DELETEOBJECT"
+        }, 
+        "0x100C": {
+            "code": "0x100C", 
+            "description": "SendObjectInfo", 
+            "name": "SENDOBJECTINFO"
+        }, 
+        "0x100D": {
+            "code": "0x100D", 
+            "description": "SendObject", 
+            "name": "SENDOBJECT"
+        }, 
+        "0x100E": {
+            "code": "0x100E", 
+            "description": "InitiateCapture", 
+            "name": "INITIATECAPTURE"
+        }, 
+        "0x100F": {
+            "code": "0x100F", 
+            "description": "FormatStore", 
+            "name": "FORMATSTORE"
+        }, 
+        "0x1010": {
+            "code": "0x1010", 
+            "description": "ResetDevice", 
+            "name": "RESETDEVICE"
+        }, 
+        "0x1011": {
+            "code": "0x1011", 
+            "description": "SelfTest", 
+            "name": "SELFTEST"
+        }, 
+        "0x1012": {
+            "code": "0x1012", 
+            "description": "SetObjectProtection", 
+            "name": "SETOBJECTPROTECTION"
+        }, 
+        "0x1013": {
+            "code": "0x1013", 
+            "description": "PowerDown", 
+            "name": "POWERDOWN"
+        }, 
+        "0x1014": {
+            "code": "0x1014", 
+            "description": "GetDevicePropDesc", 
+            "name": "GETDEVICEPROPDESC"
+        }, 
+        "0x1015": {
+            "code": "0x1015", 
+            "description": "GetDevicePropValue", 
+            "name": "GETDEVICEPROPVALUE"
+        }, 
+        "0x1016": {
+            "code": "0x1016", 
+            "description": "SetDevicePropValue", 
+            "name": "SETDEVICEPROPVALUE"
+        }, 
+        "0x1017": {
+            "code": "0x1017", 
+            "description": "ResetDevicePropValue", 
+            "name": "RESETDEVICEPROPVALUE"
+        }, 
+        "0x1018": {
+            "code": "0x1018", 
+            "description": "TerminateOpenCapture", 
+            "name": "TERMINATECAPTURE"
+        }, 
+        "0x1019": {
+            "code": "0x1019", 
+            "description": "MoveObject", 
+            "name": "MOVEOBJECT"
+        }, 
+        "0x101A": {
+            "code": "0x101A", 
+            "description": "CopyObject", 
+            "name": "COPYOBJECT"
+        }, 
+        "0x101B": {
+            "code": "0x101B", 
+            "description": "GetPartialObject", 
+            "name": "GETPARTIALOBJECT"
+        }, 
+        "0x101C": {
+            "code": "0x101C", 
+            "description": "InitiateOpenCapture", 
+            "name": "INITIATEOPENCAPTURE"
+        }, 
+        "0x1026": {
+            "code": "0x1026", 
+            "description": "RESERVED_FIRST", 
+            "name": "RESERVED_FIRST"
+        }, 
+        "0x1FFF": {
+            "code": "0x1FFF", 
+            "description": "RESERVED_LAST", 
+            "name": "RESERVED_LAST"
+        }, 
+        "0x9000": {
+            "code": "0x9000", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0x9301": {
+            "code": "0x9301", 
+            "description": "GETSERVICEIDS", 
+            "name": "GETSERVICEIDS"
+        }, 
+        "0x9302": {
+            "code": "0x9302", 
+            "description": "GETSERVICEINFO", 
+            "name": "GETSERVICEINFO"
+        }, 
+        "0x9303": {
+            "code": "0x9303", 
+            "description": "GETSERVICECAPABILITIES", 
+            "name": "GETSERVICECAPABILITIES"
+        }, 
+        "0x9304": {
+            "code": "0x9304", 
+            "description": "GETSERVICEPROPERTIES", 
+            "name": "GETSERVICEPROPERTIES"
+        }, 
+        "0x9305": {
+            "code": "0x9305", 
+            "description": "GETSERVICEPROPERTYLIST", 
+            "name": "GETSERVICEPROPERTYLIST"
+        }, 
+        "0x9306": {
+            "code": "0x9306", 
+            "description": "SETSERVICEPROPERTYLIST", 
+            "name": "SETSERVICEPROPERTYLIST"
+        }, 
+        "0x9307": {
+            "code": "0x9307", 
+            "description": "UPDATEOBJECTPROPLIST", 
+            "name": "UPDATEOBJECTPROPLIST"
+        }, 
+        "0x9308": {
+            "code": "0x9308", 
+            "description": "DELETEOBJECTPROPLIST", 
+            "name": "DELETEOBJECTPROPLIST"
+        }, 
+        "0x9309": {
+            "code": "0x9309", 
+            "description": "DELETESERVICEPROPLIST", 
+            "name": "DELETESERVICEPROPLIST"
+        }, 
+        "0x930A": {
+            "code": "0x930A", 
+            "description": "GETFORMATCAPABILITIES", 
+            "name": "GETFORMATCAPABILITIES"
+        }, 
+        "0x97FF": {
+            "code": "0x97FF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0x9801": {
+            "code": "0x9801", 
+            "description": "GetObjectPropsSupported", 
+            "name": "GETOBJECTPROPSSUPPORTED"
+        }, 
+        "0x9802": {
+            "code": "0x9802", 
+            "description": "GetObjectPropDesc", 
+            "name": "GETOBJECTPROPDESC"
+        }, 
+        "0x9803": {
+            "code": "0x9803", 
+            "description": "GetObjectPropValue", 
+            "name": "GETOBJECTPROPVALUE"
+        }, 
+        "0x9804": {
+            "code": "0x9804", 
+            "description": "SetObjectPropValue", 
+            "name": "SETOBJECTPROPVALUE"
+        }, 
+        "0x9805": {
+            "code": "0x9805", 
+            "description": "GetObjectPropList", 
+            "name": "GETOBJECTPROPLIST"
+        }, 
+        "0x9806": {
+            "code": "0x9806", 
+            "description": "SetObjectPropList", 
+            "name": "SETOBJECTPROPLIST"
+        }, 
+        "0x9807": {
+            "code": "0x9807", 
+            "description": "GetInterDependentPropDesc", 
+            "name": "GETINTERDEPENDENTPROPDESC"
+        }, 
+        "0x9808": {
+            "code": "0x9808", 
+            "description": "SendObjectPropList", 
+            "name": "SENDOBJECTPROPLIST"
+        }, 
+        "0x9809": {
+            "code": "0x9809", 
+            "description": "GetFormatCapabilities", 
+            "name": "GETFORMATCAPABILITIES"
+        }, 
+        "0x980A": {
+            "code": "0x980A", 
+            "description": "UpdateObjectPropList", 
+            "name": "UPDATEOBJECTPROPLIST"
+        }, 
+        "0x980B": {
+            "code": "0x980B", 
+            "description": "DeleteObjectPropList", 
+            "name": "DELETEOBJECTPROPLIST"
+        }, 
+        "0x9810": {
+            "code": "0x9810", 
+            "description": "GetObjectReferences", 
+            "name": "GETOBJECTREFERENCES"
+        }, 
+        "0x9811": {
+            "code": "0x9811", 
+            "description": "SetObjectReferences", 
+            "name": "SETOBJECTREFERENCES"
+        }, 
+        "0x9812": {
+            "code": "0x9812", 
+            "description": "UpdateDeviceFirmWare", 
+            "name": "UPDATEDEVICEFIRMWARE"
+        }, 
+        "0x9813": {
+            "code": "0x9813", 
+            "description": "ResetObjectPropValue", 
+            "name": "RESETOBJECTPROPVALUE"
+        }, 
+        "0x9900": {
+            "code": "0x9900", 
+            "description": "GetServiceIDs", 
+            "name": "GETSERVICEIDS"
+        }, 
+        "0x9901": {
+            "code": "0x9901", 
+            "description": "GetServiceInfo", 
+            "name": "GETSERVICEINFO"
+        }, 
+        "0x9902": {
+            "code": "0x9902", 
+            "description": "GetServiceCapabilities", 
+            "name": "GETSERVICECAPABILITIES"
+        }, 
+        "0x9903": {
+            "code": "0x9903", 
+            "description": "GetServiceProperties", 
+            "name": "GETSERVICEPROPERTIES"
+        }, 
+        "0x9904": {
+            "code": "0x9904", 
+            "description": "GetServicePropList", 
+            "name": "GETSERVICEPROPERTYLIST"
+        }, 
+        "0x9905": {
+            "code": "0x9905", 
+            "description": "SetServicePropList", 
+            "name": "SETSERVICEPROPERTYLIST"
+        }, 
+        "0x9906": {
+            "code": "0x9906", 
+            "description": "DeleteServicePropList", 
+            "name": "DELETESERVICEPROPLIST"
+        }, 
+        "0x9910": {
+            "code": "0x9910", 
+            "description": "OpenObjectStream", 
+            "name": "OPENOBJECTSTREAM"
+        }, 
+        "0x9911": {
+            "code": "0x9911", 
+            "description": "ReadObjectStream", 
+            "name": "READOBJECTSTREAM"
+        }, 
+        "0x9912": {
+            "code": "0x9912", 
+            "description": "WriteObjectStream", 
+            "name": "WRITEOBJECTSTREAM"
+        }, 
+        "0x9913": {
+            "code": "0x9913", 
+            "description": "SeekObjectStream", 
+            "name": "SEEKOBJECTSTREAM"
+        }, 
+        "0x9914": {
+            "code": "0x9914", 
+            "description": "CloseObjectStream", 
+            "name": "CLOSEOBJECTSTREAM"
+        }
+    }, 
+    "Response": {
+        "5": {
+            "code": "5", 
+            "description": "NUMPARAMS_MAX", 
+            "name": "NUMPARAMS_MAX"
+        }
+    }, 
+    "ResponseCode": {
+        "0x2000": {
+            "code": "0x2000", 
+            "description": "UNDEFINED", 
+            "name": "UNDEFINED"
+        }, 
+        "0x2001": {
+            "code": "0x2001", 
+            "description": "OK", 
+            "name": "OK"
+        }, 
+        "0x2002": {
+            "code": "0x2002", 
+            "description": "GENERALERROR", 
+            "name": "GENERALERROR"
+        }, 
+        "0x2003": {
+            "code": "0x2003", 
+            "description": "SESSIONNOTOPEN", 
+            "name": "SESSIONNOTOPEN"
+        }, 
+        "0x2004": {
+            "code": "0x2004", 
+            "description": "INVALIDTRANSACTIONID", 
+            "name": "INVALIDTRANSACTIONID"
+        }, 
+        "0x2005": {
+            "code": "0x2005", 
+            "description": "OPERATIONNOTSUPPORTED", 
+            "name": "OPERATIONNOTSUPPORTED"
+        }, 
+        "0x2006": {
+            "code": "0x2006", 
+            "description": "PARAMETERNOTSUPPORTED", 
+            "name": "PARAMETERNOTSUPPORTED"
+        }, 
+        "0x2007": {
+            "code": "0x2007", 
+            "description": "INCOMPLETETRANSFER", 
+            "name": "INCOMPLETETRANSFER"
+        }, 
+        "0x2008": {
+            "code": "0x2008", 
+            "description": "INVALIDSTORAGEID", 
+            "name": "INVALIDSTORAGEID"
+        }, 
+        "0x2009": {
+            "code": "0x2009", 
+            "description": "INVALIDOBJECTHANDLE", 
+            "name": "INVALIDOBJECTHANDLE"
+        }, 
+        "0x200A": {
+            "code": "0x200A", 
+            "description": "DEVICEPROPERTYNOTSUPPORTED", 
+            "name": "DEVICEPROPERTYNOTSUPPORTED"
+        }, 
+        "0x200B": {
+            "code": "0x200B", 
+            "description": "INVALIDOBJECTFORMATCODE", 
+            "name": "INVALIDOBJECTFORMATCODE"
+        }, 
+        "0x200C": {
+            "code": "0x200C", 
+            "description": "STOREFULL", 
+            "name": "STOREFULL"
+        }, 
+        "0x200D": {
+            "code": "0x200D", 
+            "description": "OBJECTWRITEPROTECTED", 
+            "name": "OBJECTWRITEPROTECTED"
+        }, 
+        "0x200E": {
+            "code": "0x200E", 
+            "description": "STOREWRITEPROTECTED", 
+            "name": "STOREWRITEPROTECTED"
+        }, 
+        "0x200F": {
+            "code": "0x200F", 
+            "description": "ACCESSDENIED", 
+            "name": "ACCESSDENIED"
+        }, 
+        "0x2010": {
+            "code": "0x2010", 
+            "description": "NOTHUMBNAILPRESENT", 
+            "name": "NOTHUMBNAILPRESENT"
+        }, 
+        "0x2011": {
+            "code": "0x2011", 
+            "description": "SELFTESTFAILED", 
+            "name": "SELFTESTFAILED"
+        }, 
+        "0x2012": {
+            "code": "0x2012", 
+            "description": "PARTIALDELETION", 
+            "name": "PARTIALDELETION"
+        }, 
+        "0x2013": {
+            "code": "0x2013", 
+            "description": "STORENOTAVAILABLE", 
+            "name": "STORENOTAVAILABLE"
+        }, 
+        "0x2014": {
+            "code": "0x2014", 
+            "description": "NOSPECIFICATIONBYFORMAT", 
+            "name": "NOSPECIFICATIONBYFORMAT"
+        }, 
+        "0x2015": {
+            "code": "0x2015", 
+            "description": "NOVALIDOBJECTINFO", 
+            "name": "NOVALIDOBJECTINFO"
+        }, 
+        "0x2016": {
+            "code": "0x2016", 
+            "description": "INVALIDCODEFORMAT", 
+            "name": "INVALIDCODEFORMAT"
+        }, 
+        "0x2017": {
+            "code": "0x2017", 
+            "description": "UNKNOWNVENDORCODE", 
+            "name": "UNKNOWNVENDORCODE"
+        }, 
+        "0x2018": {
+            "code": "0x2018", 
+            "description": "CAPTUREALREADYTERMINATED", 
+            "name": "CAPTUREALREADYTERMINATED"
+        }, 
+        "0x2019": {
+            "code": "0x2019", 
+            "description": "DEVICEBUSY", 
+            "name": "DEVICEBUSY"
+        }, 
+        "0x201A": {
+            "code": "0x201A", 
+            "description": "INVALIDPARENT", 
+            "name": "INVALIDPARENT"
+        }, 
+        "0x201B": {
+            "code": "0x201B", 
+            "description": "INVALIDPROPFORMAT", 
+            "name": "INVALIDPROPFORMAT"
+        }, 
+        "0x201C": {
+            "code": "0x201C", 
+            "description": "INVALIDPROPVALUE", 
+            "name": "INVALIDPROPVALUE"
+        }, 
+        "0x201D": {
+            "code": "0x201D", 
+            "description": "INVALIDPARAMETER", 
+            "name": "INVALIDPARAMETER"
+        }, 
+        "0x201E": {
+            "code": "0x201E", 
+            "description": "SESSIONALREADYOPENED", 
+            "name": "SESSIONALREADYOPENED"
+        }, 
+        "0x201F": {
+            "code": "0x201F", 
+            "description": "TRANSACTIONCANCELLED", 
+            "name": "TRANSACTIONCANCELLED"
+        }, 
+        "0x2020": {
+            "code": "0x2020", 
+            "description": "SPECIFICATIONOFDESTINATIONUNSUPPORTED", 
+            "name": "SPECIFICATIONOFDESTINATIONUNSUPPORTED"
+        }, 
+        "0x2024": {
+            "code": "0x2024", 
+            "description": "RESERVED_FIRST", 
+            "name": "RESERVED_FIRST"
+        }, 
+        "0x2FFF": {
+            "code": "0x2FFF", 
+            "description": "RESERVED_LAST", 
+            "name": "RESERVED_LAST"
+        }, 
+        "0xA000": {
+            "code": "0xA000", 
+            "description": "VENDOREXTENSION_FIRST", 
+            "name": "VENDOREXTENSION_FIRST"
+        }, 
+        "0xA301": {
+            "code": "0xA301", 
+            "description": "INVALID_SERVICEID", 
+            "name": "INVALID_SERVICEID"
+        }, 
+        "0xA302": {
+            "code": "0xA302", 
+            "description": "INVALID_SERVICEPROPCODE", 
+            "name": "INVALID_SERVICEPROPCODE"
+        }, 
+        "0xA7FF": {
+            "code": "0xA7FF", 
+            "description": "VENDOREXTENSION_LAST", 
+            "name": "VENDOREXTENSION_LAST"
+        }, 
+        "0xA801": {
+            "code": "0xA801", 
+            "description": "INVALIDOBJECTPROPCODE", 
+            "name": "INVALIDOBJECTPROPCODE"
+        }, 
+        "0xA802": {
+            "code": "0xA802", 
+            "description": "INVALIDOBJECTPROPFORMAT", 
+            "name": "INVALIDOBJECTPROPFORMAT"
+        }, 
+        "0xA803": {
+            "code": "0xA803", 
+            "description": "INVALIDOBJECTPROPVALUE", 
+            "name": "INVALIDOBJECTPROPVALUE"
+        }, 
+        "0xA804": {
+            "code": "0xA804", 
+            "description": "INVALIDOBJECTREFERENCE", 
+            "name": "INVALIDOBJECTREFERENCE"
+        }, 
+        "0xA805": {
+            "code": "0xA805", 
+            "description": "INVALIDOBJECTGROUPCODE", 
+            "name": "INVALIDOBJECTGROUPCODE"
+        }, 
+        "0xA806": {
+            "code": "0xA806", 
+            "description": "INVALIDDATASET", 
+            "name": "INVALIDDATASET"
+        }, 
+        "0xA807": {
+            "code": "0xA807", 
+            "description": "SPECIFICATIONBYGROUPUNSUPPORTED", 
+            "name": "SPECIFICATIONBYGROUPUNSUPPORTED"
+        }, 
+        "0xA809": {
+            "code": "0xA809", 
+            "description": "OBJECTTOOLARGE", 
+            "name": "OBJECTTOOLARGE"
+        }, 
+        "0xA80A": {
+            "code": "0xA80A", 
+            "description": "OBJECTPROPERTYNOTSUPPORTED", 
+            "name": "OBJECTPROPERTYNOTSUPPORTED"
+        }, 
+        "0xA80B": {
+            "code": "0xA80B", 
+            "description": "INVALID_SERVICEID", 
+            "name": "INVALID_SERVICEID"
+        }, 
+        "0xA80C": {
+            "code": "0xA80C", 
+            "description": "INVALID_SERVICEPROPCODE", 
+            "name": "INVALID_SERVICEPROPCODE"
+        }, 
+        "0xA80D": {
+            "code": "0xA80D", 
+            "description": "Max_Streams_Reached", 
+            "name": "MAXSTREAMSREACHED"
+        }, 
+        "0xA80E": {
+            "code": "0xA80E", 
+            "description": "Max_Streams_Per_Object_Reached", 
+            "name": "MAXSTREAMSPEROBJECTREACHED"
+        }, 
+        "0xA80F": {
+            "code": "0xA80F", 
+            "description": "SESSIONLIMITREACHED", 
+            "name": "SESSIONLIMITREACHED"
+        }
+    }, 
+    "Responses": {
+        "0x1006": {
+            "code": "0x1006", 
+            "name": "GETNUMOBJECTS", 
+            "parameters": [
+                "NumObjects"
+            ]
+        }, 
+        "0x100C": {
+            "code": "0x100C", 
+            "name": "SENDOBJECTINFO", 
+            "parameters": [
+                "Responder StorageID in which the object will be stored", 
+                "Responder parent ObjectHandle in which the object will be stored", 
+                "Responder's reserved ObjectHandle for the incoming object"
+            ]
+        }, 
+        "0x101A": {
+            "code": "0x101A", 
+            "name": "COPYOBJECT", 
+            "parameters": [
+                "ObjectHandle of new copy of object"
+            ]
+        }, 
+        "0x101B": {
+            "code": "0x101B", 
+            "name": "GETPARTIALOBJECT", 
+            "parameters": [
+                "Actual number of bytes sent"
+            ]
+        }, 
+        "0x9307": {
+            "code": "0x9307", 
+            "name": "UPDATEOBJECTPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x9308": {
+            "code": "0x9308", 
+            "name": "DELETEOBJECTPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x9309": {
+            "code": "0x9309", 
+            "name": "DELETESERVICEPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x9808": {
+            "code": "0x9808", 
+            "name": "SENDOBJECTPROPLIST", 
+            "parameters": [
+                "Responder StorageID in which the object will be stored", 
+                "Responder parent ObjectHandle in which the object will be stored", 
+                "Responder's reserved ObjectHandle for the incoming object", 
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x980A": {
+            "code": "0x980A", 
+            "name": "UPDATEOBJECTPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x980B": {
+            "code": "0x980B", 
+            "name": "DELETEOBJECTPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x9906": {
+            "code": "0x9906", 
+            "name": "DELETESERVICEPROPLIST", 
+            "parameters": [
+                "[Index of failed property]"
+            ]
+        }, 
+        "0x9910": {
+            "code": "0x9910", 
+            "name": "OPENOBJECTSTREAM", 
+            "parameters": [
+                "StreamHandle", 
+                "[MTU (Responder)]"
+            ]
+        }, 
+        "0x9911": {
+            "code": "0x9911", 
+            "name": "READOBJECTSTREAM", 
+            "parameters": [
+                "Units read"
+            ]
+        }, 
+        "0x9912": {
+            "code": "0x9912", 
+            "name": "WRITEOBJECTSTREAM", 
+            "parameters": [
+                "Bytes written"
+            ]
+        }, 
+        "0x9913": {
+            "code": "0x9913", 
+            "name": "SEEKOBJECTSTREAM", 
+            "parameters": [
+                "Absolute position (most  significant 4 bytes)", 
+                "Absolute position (least significant 4 bytes)"
+            ]
+        }
+    }
+}

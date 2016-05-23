@@ -1,0 +1,11 @@
+{
+    "OpCode": {
+        "0x9001": "SetCameraSettings", 
+        "0x9002": "GetCameraSettings", 
+        "0x9003": "GetLensParameter", 
+        "0x9004": "Release", 
+        "0x9005": "OpenLESession", 
+        "0x9006": "CloseLESession", 
+        "0x9007": "RequestObjectTransferReady"
+    }
+}

@@ -1,0 +1,2758 @@
+//#  (c) 2012 Microsoft Corporation
+//#
+//#  Title:       Microsoft-Windows-MTPClassDriver
+//#
+//#  Details:     NetMon parser for decoding operational and analytical ETW logs logged in the 
+//#               WPD MTP Class driver.
+//#
+//#  Public References:  WpdCoreInstrumentation.man
+//#
+//#  Comments: EventIDs 1000-1999 : Operational, 2000+ : Analytical
+//#
+//#  Revision Class and Date:Major, 8/23/2011
+//#
+//####
+
+const MTP_COMMAND_NUMPARAMS_MAX   = 5;
+const MTP_RESPONSE_NUMPARAMS_MAX  = 5;
+const MTP_EVENT_NUMPARAMS_MAX     = 3;
+
+//========================================================
+// MTP Opcodes
+//========================================================
+const MTP_OPCODE_UNDEFINED                 = 0x1000;
+const MTP_OPCODE_GETDEVICEINFO             = 0x1001;
+const MTP_OPCODE_OPENSESSION               = 0x1002;
+const MTP_OPCODE_CLOSESESSION              = 0x1003;
+const MTP_OPCODE_GETSTORAGEIDS             = 0x1004;
+const MTP_OPCODE_GETSTORAGEINFO            = 0x1005;
+const MTP_OPCODE_GETNUMOBJECTS             = 0x1006;
+const MTP_OPCODE_GETOBJECTHANDLES          = 0x1007;
+const MTP_OPCODE_GETOBJECTINFO             = 0x1008;
+const MTP_OPCODE_GETOBJECT                 = 0x1009;
+const MTP_OPCODE_GETTHUMB                  = 0x100A;
+const MTP_OPCODE_DELETEOBJECT              = 0x100B;
+const MTP_OPCODE_SENDOBJECTINFO            = 0x100C;
+const MTP_OPCODE_SENDOBJECT                = 0x100D;
+const MTP_OPCODE_INITIATECAPTURE           = 0x100E;
+const MTP_OPCODE_FORMATSTORE               = 0x100F;
+const MTP_OPCODE_RESETDEVICE               = 0x1010;
+const MTP_OPCODE_SELFTEST                  = 0x1011;
+const MTP_OPCODE_SETOBJECTPROTECTION       = 0x1012;
+const MTP_OPCODE_POWERDOWN                 = 0x1013;
+const MTP_OPCODE_GETDEVICEPROPDESC         = 0x1014;
+const MTP_OPCODE_GETDEVICEPROPVALUE        = 0x1015;
+const MTP_OPCODE_SETDEVICEPROPVALUE        = 0x1016;
+const MTP_OPCODE_RESETDEVICEPROPVALUE      = 0x1017;
+const MTP_OPCODE_TERMINATECAPTURE          = 0x1018;
+const MTP_OPCODE_MOVEOBJECT                = 0x1019;
+const MTP_OPCODE_COPYOBJECT                = 0x101A;
+const MTP_OPCODE_GETPARTIALOBJECT          = 0x101B;
+const MTP_OPCODE_INITIATEOPENCAPTURE       = 0x101C;
+
+const MTP_OPCODE_GETSERVICEIDS             = 0x9301;
+const MTP_OPCODE_GETSERVICEINFO            = 0x9302;
+const MTP_OPCODE_GETSERVICECAPABILITIES    = 0x9303;
+const MTP_OPCODE_GETSERVICEPROPERTIES      = 0x9304;
+const MTP_OPCODE_GETSERVICEPROPERTYLIST    = 0x9305;
+const MTP_OPCODE_SETSERVICEPROPERTYLIST    = 0x9306;
+const MTP_OPCODE_UPDATEOBJECTPROPLIST      = 0x9307;
+const MTP_OPCODE_DELETEOBJECTPROPLIST      = 0x9308;
+const MTP_OPCODE_DELETESERVICEPROPLIST     = 0x9309;
+const MTP_OPCODE_GETFORMATCAPABILITIES     = 0x930A;
+
+const MTP_OPCODE_GETOBJECTPROPSSUPPORTED   = 0x9801;
+const MTP_OPCODE_GETOBJECTPROPDESC         = 0x9802;
+const MTP_OPCODE_GETOBJECTPROPVALUE        = 0x9803;
+const MTP_OPCODE_SETOBJECTPROPVALUE        = 0x9804;
+const MTP_OPCODE_GETOBJECTPROPLIST         = 0x9805;
+const MTP_OPCODE_SETOBJECTPROPLIST         = 0x9806;
+const MTP_OPCODE_GETINTERDEPENDENTPROPDESC = 0x9807;
+const MTP_OPCODE_SENDOBJECTPROPLIST        = 0x9808;
+const MTP2_OPCODE_GETFORMATCAPABILITIES    = 0x9809;
+const MTP2_OPCODE_UPDATEOBJECTPROPLIST     = 0x980A; 
+const MTP2_OPCODE_DELETEOBJECTPROPLIST     = 0x980B;
+
+const MTP_OPCODE_GETOBJECTREFERENCES       = 0x9810;
+const MTP_OPCODE_SETOBJECTREFERENCES       = 0x9811;
+const MTP_OPCODE_UPDATEDEVICEFIRMWARE      = 0x9812;
+const MTP_OPCODE_RESETOBJECTPROPVALUE      = 0x9813;
+
+const MTP2_OPCODE_GETSERVICEIDS            = 0x9900;
+const MTP2_OPCODE_GETSERVICEINFO           = 0x9901;
+const MTP2_OPCODE_GETSERVICECAPABILITIES   = 0x9902;
+const MTP2_OPCODE_GETSERVICEPROPERTIES     = 0x9903;
+const MTP2_OPCODE_GETSERVICEPROPERTYLIST   = 0x9904;
+const MTP2_OPCODE_SETSERVICEPROPERTYLIST   = 0x9905;
+const MTP2_OPCODE_DELETESERVICEPROPLIST    = 0x9906;
+
+const MTP_OPCODE_OPENOBJECTSTREAM          = 0x9910;
+const MTP_OPCODE_READOBJECTSTREAM          = 0x9911;
+const MTP_OPCODE_WRITEOBJECTSTREAM         = 0x9912;
+const MTP_OPCODE_SEEKOBJECTSTREAM          = 0x9913;
+const MTP_OPCODE_CLOSEOBJECTSTREAM         = 0x9914;
+const MTP_OPCODE_CREATESESSION             = 0X9915;
+const MTP_OPCODE_RESTRICTSESSION           = 0X9916;
+
+const MTP_OPCODE_RESERVED_FIRST            = 0x1026;
+const MTP_OPCODE_RESERVED_LAST             = 0x1FFF;
+const MTP_OPCODE_VENDOREXTENSION_FIRST     = 0x9000;
+const MTP_OPCODE_VENDOREXTENSION_LAST      = 0x97FF;
+
+//========================================================
+// MTP Response codes
+//========================================================
+const MTP_RESPONSECODE_UNDEFINED                       = 0x2000;
+const MTP_RESPONSECODE_OK                              = 0x2001;
+const MTP_RESPONSECODE_GENERALERROR                    = 0x2002;
+const MTP_RESPONSECODE_SESSIONNOTOPEN                  = 0x2003;
+const MTP_RESPONSECODE_INVALIDTRANSACTIONID            = 0x2004;
+const MTP_RESPONSECODE_OPERATIONNOTSUPPORTED           = 0x2005;
+const MTP_RESPONSECODE_PARAMETERNOTSUPPORTED           = 0x2006;
+const MTP_RESPONSECODE_INCOMPLETETRANSFER              = 0x2007;
+const MTP_RESPONSECODE_INVALIDSTORAGEID                = 0x2008;
+const MTP_RESPONSECODE_INVALIDOBJECTHANDLE             = 0x2009;
+const MTP_RESPONSECODE_DEVICEPROPERTYNOTSUPPORTED      = 0x200A;
+const MTP_RESPONSECODE_INVALIDOBJECTFORMATCODE         = 0x200B;
+const MTP_RESPONSECODE_STOREFULL                       = 0x200C;
+const MTP_RESPONSECODE_OBJECTWRITEPROTECTED            = 0x200D;
+const MTP_RESPONSECODE_STOREWRITEPROTECTED             = 0x200E;
+const MTP_RESPONSECODE_ACCESSDENIED                    = 0x200F;
+const MTP_RESPONSECODE_NOTHUMBNAILPRESENT              = 0x2010;
+const MTP_RESPONSECODE_SELFTESTFAILED                  = 0x2011;
+const MTP_RESPONSECODE_PARTIALDELETION                 = 0x2012;
+const MTP_RESPONSECODE_STORENOTAVAILABLE               = 0x2013;
+const MTP_RESPONSECODE_NOSPECIFICATIONBYFORMAT         = 0x2014;
+const MTP_RESPONSECODE_NOVALIDOBJECTINFO               = 0x2015;
+const MTP_RESPONSECODE_INVALIDCODEFORMAT               = 0x2016;
+const MTP_RESPONSECODE_UNKNOWNVENDORCODE               = 0x2017;
+const MTP_RESPONSECODE_CAPTUREALREADYTERMINATED        = 0x2018;
+const MTP_RESPONSECODE_DEVICEBUSY                      = 0x2019;
+const MTP_RESPONSECODE_INVALIDPARENT                   = 0x201A;
+const MTP_RESPONSECODE_INVALIDPROPFORMAT               = 0x201B;
+const MTP_RESPONSECODE_INVALIDPROPVALUE                = 0x201C;
+const MTP_RESPONSECODE_INVALIDPARAMETER                = 0x201D;
+const MTP_RESPONSECODE_SESSIONALREADYOPENED            = 0x201E;
+const MTP_RESPONSECODE_TRANSACTIONCANCELLED            = 0x201F;
+const MTP_RESPONSECODE_SPECIFICATIONOFDESTINATIONUNSUPPORTED = 0x2020;
+const MTP_RESPONSECODE_MAXSTREAMSREACHED               = 0xA80D;
+const MTP_RESPONSECODE_MAXSTREAMSPEROBJECTREACHED      = 0xA80E;
+const MTP_RESPONSECODE_SESSIONLIMITREACHED             = 0xA80F;
+const MTP_RESPONSECODE_RESERVED_FIRST                  = 0x2024;
+const MTP_RESPONSECODE_RESERVED_LAST                   = 0x2FFF;
+const MTP_RESPONSECODE_VENDOREXTENSION_FIRST           = 0xA000;
+const MTP_RESPONSECODE_INVALID_SERVICEID               = 0xA301;
+const MTP_RESPONSECODE_INVALID_SERVICEPROPCODE         = 0xA302;
+const MTP_RESPONSECODE_VENDOREXTENSION_LAST            = 0xA7FF;
+const MTP_RESPONSECODE_INVALIDOBJECTPROPCODE           = 0xA801;
+const MTP_RESPONSECODE_INVALIDOBJECTPROPFORMAT         = 0xA802;
+const MTP_RESPONSECODE_INVALIDOBJECTPROPVALUE          = 0xA803;
+const MTP_RESPONSECODE_INVALIDOBJECTREFERENCE          = 0xA804;
+const MTP_RESPONSECODE_INVALIDOBJECTGROUPCODE          = 0xA805;
+const MTP_RESPONSECODE_INVALIDDATASET                  = 0xA806;
+const MTP_RESPONSECODE_SPECIFICATIONBYGROUPUNSUPPORTED = 0xA807;
+const MTP_RESPONSECODE_SPECIFICATIONBYDEPTHUNSUPPORTED = 0XA808;
+const MTP_RESPONSECODE_OBJECTTOOLARGE                  = 0xA809;
+const MTP_RESPONSECODE_OBJECTPROPERTYNOTSUPPORTED      = 0xA80A;
+const MTP2_RESPONSECODE_INVALID_SERVICEID              = 0xA80B;
+const MTP2_RESPONSECODE_INVALID_SERVICEPROPCODE        = 0xA80C;
+
+
+//========================================================
+// MTP Event Codes
+//========================================================
+const MTP_EVENTCODE_UNDEFINED              = 0x4000;
+const MTP_EVENTCODE_CANCELTRANSACTION      = 0x4001;
+const MTP_EVENTCODE_OBJECTADDED            = 0x4002;
+const MTP_EVENTCODE_OBJECTREMOVED          = 0x4003;
+const MTP_EVENTCODE_STOREADDED             = 0x4004;
+const MTP_EVENTCODE_STOREREMOVED           = 0x4005;
+const MTP_EVENTCODE_DEVICEPROPCHANGED      = 0x4006;
+const MTP_EVENTCODE_OBJECTINFOCHANGED      = 0x4007;
+const MTP_EVENTCODE_DEVICEINFOCHANGED      = 0x4008;
+const MTP_EVENTCODE_REQUESTOBJECTTRANSFER  = 0x4009;
+const MTP_EVENTCODE_STOREFULL              = 0x400A;
+const MTP_EVENTCODE_DEVICERESET            = 0x400B;
+const MTP_EVENTCODE_STORAGEINFOCHANGED     = 0x400C;
+const MTP_EVENTCODE_CAPTURECOMPLETE        = 0x400D;
+const MTP_EVENTCODE_UNREPORTEDSTATUS       = 0x400E;
+const MTP_EVENTCODE_SERVICEADDED           = 0xC301;
+const MTP_EVENTCODE_SERVICEREMOVED         = 0xC302;
+const MTP_EVENTCODE_SERVICEPROPCHANGED     = 0xC303;
+const MTP_EVENTCODE_METHODCOMPLETE         = 0xC304;
+const MTP_EVENTCODE_OBJECTPROPCHANGED      = 0xC801;
+const MTP_EVENTCODE_OBJECTPROPDESCCHANGED  = 0xC802;
+const MTP_EVENTCODE_OBJECTREFERENCESCHANGED= 0xc803;
+const MTP2_EVENTCODE_SERVICEADDED          = 0xC804;
+const MTP2_EVENTCODE_SERVICEREMOVED        = 0xC805;
+const MTP2_EVENTCODE_SERVICEPROPCHANGED    = 0xC806;
+const MTP2_EVENTCODE_METHODCOMPLETE        = 0xC807;
+const MTP_EVENTCODE_RESERVED_FIRST         = 0x400F;
+const MTP_EVENTCODE_RESERVED_LAST          = 0x4FFF;
+const MTP_EVENTCODE_VENDOREXTENSION_FIRST  = 0xC000;
+const MTP_EVENTCODE_VENDOREXTENSION_LAST   = 0xC7FF;
+
+//========================================================
+// MTP Datatypes
+//========================================================
+const MTP_DATATYPE_UNDEFINED   = 0x0000;
+const MTP_DATATYPE_INT8        = 0x0001;
+const MTP_DATATYPE_UINT8       = 0x0002;
+const MTP_DATATYPE_INT16       = 0x0003;
+const MTP_DATATYPE_UINT16      = 0x0004;
+const MTP_DATATYPE_INT32       = 0x0005;
+const MTP_DATATYPE_UINT32      = 0x0006;
+const MTP_DATATYPE_INT64       = 0x0007;
+const MTP_DATATYPE_UINT64      = 0x0008;
+const MTP_DATATYPE_INT128      = 0x0009;
+const MTP_DATATYPE_UINT128     = 0x000A;
+const MTP_DATATYPE_AINT8       = 0x4001;
+const MTP_DATATYPE_AUINT8      = 0x4002;
+const MTP_DATATYPE_AINT16      = 0x4003;
+const MTP_DATATYPE_AUINT16     = 0x4004;
+const MTP_DATATYPE_AINT32      = 0x4005;
+const MTP_DATATYPE_AUINT32     = 0x4006;
+const MTP_DATATYPE_AINT64      = 0x4007;
+const MTP_DATATYPE_AUINT64     = 0x4008;
+const MTP_DATATYPE_AINT128     = 0x4009;
+const MTP_DATATYPE_AUINT128    = 0x400A;
+const MTP_DATATYPE_STRING      = 0xFFFF;
+
+const MTP_DATATYPE_ARRAYMASK   = 0x4000;
+//========================================================
+// MTP FormFlags
+//========================================================
+const MTP_FORMFLAGS_NONE               = 0;
+const MTP_FORMFLAGS_RANGE              = 1;
+const MTP_FORMFLAGS_ENUM               = 2;
+const MTP_FORMFLAGS_DATETIME           = 3;
+const MTP_FORMFLAGS_FIXEDARRAY         = 4;
+const MTP_FORMFLAGS_REGEX              = 5;
+const MTP_FORMFLAGS_BYTEARRAY          = 6;
+const MTP2_FORMFLAGS_OBJECTPROP        = 7;
+const MTP2_FORMFLAGS_METHODPARAM       = 8;
+const MTP2_FORMFLAGS_OBJECTID          = 9;
+const MTP_FORMFLAGS_SVCEXT_OBJECTPROP  = 0x81;
+const MTP_FORMFLAGS_SVCEXT_METHODPARAM = 0x82;
+const MTP_FORMFLAGS_SVCEXT_OBJECTID    = 0x83;
+const MTP_FORMFLAGS_LONGSTRING         = 0xff;
+
+
+//========================================================
+// MTP Formats
+//========================================================
+const MTP_FORMATCODE_NOTUSED                      = 0x0000;
+const MTP_FORMATCODE_ALLIMAGES                    = 0xFFFFFFFF;
+const MTP_FORMATCODE_UNDEFINED                    = 0x3000;
+const MTP_FORMATCODE_ASSOCIATION                  = 0x3001;
+const MTP_FORMATCODE_SCRIPT                       = 0x3002;
+const MTP_FORMATCODE_EXECUTABLE                   = 0x3003;
+const MTP_FORMATCODE_TEXT                         = 0x3004;
+const MTP_FORMATCODE_HTML                         = 0x3005;
+const MTP_FORMATCODE_DPOF                         = 0x3006;
+const MTP_FORMATCODE_AIFF                         = 0x3007;
+const MTP_FORMATCODE_WAVE                         = 0x3008;
+const MTP_FORMATCODE_MP3                          = 0x3009;
+const MTP_FORMATCODE_AVI                          = 0x300A;
+const MTP_FORMATCODE_MPEG                         = 0x300B;
+const MTP_FORMATCODE_ASF                          = 0x300C;
+const MTP_FORMATCODE_RESERVED_FIRST               = 0x300D;
+const MTP_FORMATCODE_RESERVED_LAST                = 0x37FF;
+
+const MTP_FORMATCODE_IMAGE_UNDEFINED              = 0x3800;
+const MTP_FORMATCODE_IMAGE_EXIF                   = 0x3801;
+const MTP_FORMATCODE_IMAGE_TIFFEP                 = 0x3802;
+const MTP_FORMATCODE_IMAGE_FLASHPIX               = 0x3803;
+const MTP_FORMATCODE_IMAGE_BMP                    = 0x3804;
+const MTP_FORMATCODE_IMAGE_CIFF                   = 0x3805;
+const MTP_FORMATCODE_IMAGE_GIF                    = 0x3807;
+const MTP_FORMATCODE_IMAGE_JFIF                   = 0x3808;
+const MTP_FORMATCODE_IMAGE_PCD                    = 0x3809;
+const MTP_FORMATCODE_IMAGE_PICT                   = 0x380A;
+const MTP_FORMATCODE_IMAGE_PNG                    = 0x380B;
+const MTP_FORMATCODE_IMAGE_TIFF                   = 0x380D;
+const MTP_FORMATCODE_IMAGE_TIFFIT                 = 0x380E;
+const MTP_FORMATCODE_IMAGE_JP2                    = 0x380F;
+const MTP_FORMATCODE_IMAGE_JPX                    = 0x3810;
+const MTP_FORMATCODE_IMAGE_RESERVED_FIRST         = 0x3811;
+const MTP_FORMATCODE_IMAGE_RESERVED_LAST          = 0x3FFF;
+
+const MTP_FORMATCODE_UNDEFINEDFIRMWARE            = 0xB802;
+const MTP_FORMATCODE_WBMP                         = 0xB803;
+const MTP_FORMATCODE_JPEGXR                       = 0xB804;
+const MTP_FORMATCODE_WINDOWSIMAGEFORMAT           = 0xB881;
+const MTP_FORMATCODE_UNDEFINEDAUDIO               = 0xB900;
+const MTP_FORMATCODE_WMA                          = 0xB901;
+const MTP_FORMATCODE_OGG                          = 0xB902;
+const MTP_FORMATCODE_AAC                          = 0xB903;
+const MTP_FORMATCODE_AUDIBLE                      = 0xB904;
+const MTP_FORMATCODE_FLAC                         = 0xB906;
+const MTP_FORMATCODE_QCELP                        = 0xB907;
+const MTP_FORMATCODE_AMR                          = 0xB908;
+const MTP_FORMATCODE_UNDEFINEDVIDEO               = 0xB980;
+const MTP_FORMATCODE_WMV                          = 0xB981;
+const MTP_FORMATCODE_MP4                          = 0xB982;
+const MTP_FORMATCODE_MP2                          = 0xB983;
+const MTP_FORMATCODE_3GP                          = 0xB984;
+const MTP_FORMATCODE_3G2                          = 0xB985;
+const MTP_FORMATCODE_AVCHD                        = 0xB986;
+const MTP_FORMATCODE_ATSCTS                       = 0xB987;
+const MTP_FORMATCODE_DVBTS                        = 0xB988;
+const MTP_FORMATCODE_UNDEFINEDCOLLECTION          = 0xBA00;
+const MTP_FORMATCODE_ABSTRACTMULTIMEDIAALBUM      = 0xBA01;
+const MTP_FORMATCODE_ABSTRACTIMAGEALBUM           = 0xBA02;
+const MTP_FORMATCODE_ABSTRACTAUDIOALBUM           = 0xBA03;
+const MTP_FORMATCODE_ABSTRACTVIDEOALBUM           = 0xBA04;
+const MTP_FORMATCODE_ABSTRACTAUDIOVIDEOPLAYLIST   = 0xBA05;
+const MTP_FORMATCODE_ABSTRACTCONTACTGROUP         = 0xBA06;
+const MTP_FORMATCODE_ABSTRACTMESSAGEFOLDER        = 0xBA07;
+const MTP_FORMATCODE_ABSTRACTCHAPTEREDPRODUCTION  = 0xBA08;
+const MTP_FORMATCODE_ABSTRACTMEDIACAST            = 0xBA0B;
+const MTP_FORMATCODE_WPLPLAYLIST                  = 0xBA10;
+const MTP_FORMATCODE_M3UPLAYLIST                  = 0xBA11;
+const MTP_FORMATCODE_MPLPLAYLIST                  = 0xBA12;
+const MTP_FORMATCODE_ASXPLAYLIST                  = 0xBA13;
+const MTP_FORMATCODE_PLSPLAYLIST                  = 0xBA14;
+const MTP_FORMATCODE_UNDEFINEDDOCUMENT            = 0xBA80;
+const MTP_FORMATCODE_ABSTRACTDOCUMENT             = 0xBA81;
+const MTP_FORMATCODE_XMLDOCUMENT                  = 0xBA82;
+const MTP_FORMATCODE_MICROSOFTWORDDOCUMENT        = 0xBA83;
+const MTP_FORMATCODE_MHTCOMPILEDHTMLDOCUMENT      = 0xBA84;
+const MTP_FORMATCODE_MICROSOFTEXCELSPREADSHEET    = 0xBA85;
+const MTP_FORMATCODE_MICROSOFTPOWERPOINTDOCUMENT  = 0xBA86;
+const MTP_FORMATCODE_UNDEFINEDMESSAGE             = 0xBB00;
+const MTP_FORMATCODE_ABSTRACTMESSAGE              = 0xBB01;
+const MTP_FORMATCODE_UNDEFINEDCONTACT             = 0xBB80;
+const MTP_FORMATCODE_ABSTRACTCONTACT              = 0xBB81;
+const MTP_FORMATCODE_VCARD2                       = 0xBB82;
+const MTP_FORMATCODE_VCARD3                       = 0xBB83;
+const MTP_FORMATCODE_UNDEFINEDCALENDARITEM        = 0xBE00;
+const MTP_FORMATCODE_ABSTRACTCALENDARITEM         = 0xBE01;
+const MTP_FORMATCODE_VCALENDAR1                   = 0xBE02;
+const MTP_FORMATCODE_VCALENDAR2                   = 0xBE03;
+const MTP_FORMATCODE_UNDEFINEDWINDOWSEXECUTABLE   = 0xBE80;
+
+const MTP_FORMATCODE_VENDOREXTENSION_FIRST        = 0xB000;
+const MTP_FORMATCODE_VENDOREXTENSION_LAST         = 0xB7FF;
+
+//========================================================
+// MTP DevicePropCodes
+//========================================================
+const MTP_DEVICEPROPCODE_NOTUSED                       = 0x0;
+const MTP_DEVICEPROPCODE_ALL                           = 0xFFFFFFFF;
+const MTP_DEVICEPROPCODE_UNDEFINED                     = 0x5000;
+const MTP_DEVICEPROPCODE_BATTERYLEVEL                  = 0x5001;
+const MTP_DEVICEPROPCODE_FUNCTIONMODE                  = 0x5002;
+const MTP_DEVICEPROPCODE_IMAGESIZE                     = 0x5003;
+const MTP_DEVICEPROPCODE_COMPRESSIONSETTING            = 0x5004;
+const MTP_DEVICEPROPCODE_WHITEBALANCE                  = 0x5005;
+const MTP_DEVICEPROPCODE_RGBGAIN                       = 0x5006;
+const MTP_DEVICEPROPCODE_FNUMBER                       = 0x5007;
+const MTP_DEVICEPROPCODE_FOCALLENGTH                   = 0x5008;
+const MTP_DEVICEPROPCODE_FOCUSDISTANCE                 = 0x5009;
+const MTP_DEVICEPROPCODE_FOCUSMODE                     = 0x500A;
+const MTP_DEVICEPROPCODE_EXPOSUREMETERINGMODE          = 0x500B;
+const MTP_DEVICEPROPCODE_FLASHMODE                     = 0x500C;
+const MTP_DEVICEPROPCODE_EXPOSURETIME                  = 0x500D;
+const MTP_DEVICEPROPCODE_EXPOSUREPROGRAMMODE           = 0x500E;
+const MTP_DEVICEPROPCODE_EXPOSUREINDEX                 = 0x500F;
+const MTP_DEVICEPROPCODE_EXPOSURECOMPENSATION          = 0x5010;
+const MTP_DEVICEPROPCODE_DATETIME                      = 0x5011;
+const MTP_DEVICEPROPCODE_CAPTUREDELAY                  = 0x5012;
+const MTP_DEVICEPROPCODE_STILLCAPTUREMODE              = 0x5013;
+const MTP_DEVICEPROPCODE_CONTRAST                      = 0x5014;
+const MTP_DEVICEPROPCODE_SHARPNESS                     = 0x5015;
+const MTP_DEVICEPROPCODE_DIGITALZOOM                   = 0x5016;
+const MTP_DEVICEPROPCODE_EFFECTMODE                    = 0x5017;
+const MTP_DEVICEPROPCODE_BURSTNUMBER                   = 0x5018;
+const MTP_DEVICEPROPCODE_BURSTINTERVAL                 = 0x5019;
+const MTP_DEVICEPROPCODE_TIMELAPSENUMBER               = 0x501A;
+const MTP_DEVICEPROPCODE_TIMELAPSEINTERVAL             = 0x501B;
+const MTP_DEVICEPROPCODE_FOCUSMETERINGMODE             = 0x501C;
+const MTP_DEVICEPROPCODE_UPLOADURL                     = 0x501D;
+const MTP_DEVICEPROPCODE_ARTIST                        = 0x501E;
+const MTP_DEVICEPROPCODE_COPYRIGHTINFO                 = 0x501F;
+
+const MTP_DEVICEPROPCODE_FUNCTIONALID                  = 0xD301;
+const MTP_DEVICEPROPCODE_MODELUNIQUEID                 = 0xD302;
+const MTP_DEVICEPROPCODE_USEDEVICESTAGE                = 0xD303;
+
+const MTP_DEVICEPROPCODE_SYNCHRONIZATIONPARTNER        = 0xD401;
+const MTP_DEVICEPROPCODE_DEVICEFRIENDLYNAME            = 0xD402;
+const MTP_DEVICEPROPCODE_VOLUME                        = 0xD403;
+const MTP_DEVICEPROPCODE_CONSUMPTIONFORMATPREFERENCES  = 0xD404;
+const MTP_DEVICEPROPCODE_DEVICEICON                    = 0xD405;
+const MTP_DEVICEPROPCODE_SESSIONINITIATORVERSIONINFO   = 0xD406;
+const MTP_DEVICEPROPCODE_PERCEIVEDDEVICETYPE           = 0xD407;
+const MTP2_DEVICEPROPCODE_FUNCTIONALID                 = 0xD408;
+const MTP_DEVICEPROPCODE_PLAYBACKRATE                  = 0xD410;
+const MTP_DEVICEPROPCODE_PLAYBACKOBJECT                = 0xD411;
+const MTP_DEVICEPROPCODE_PLAYBACKCONTAINER             = 0xD412;
+const MTP_DEVICEPROPCODE_PLAYBACKPOSITION              = 0xD413;
+
+const MTP_DEVICEPROPCODE_RESERVED_FIRST                = 0x5020;
+const MTP_DEVICEPROPCODE_RESERVED_LAST                 = 0x5FFF;
+const MTP_DEVICEPROPCODE_VENDOREXTENSION_FIRST         = 0xD000;
+const MTP_DEVICEPROPCODE_VENDOREXTENSION_LAST          = 0xD3FF;
+
+
+//========================================================
+// MTP ObjectPropCodes
+//========================================================
+const MTP_OBJECTPROPCODE_NOTUSED                       = 0x0;
+const MTP_OBJECTPROPCODE_ALL                           = 0xFFFFFFFF;
+const MTP_OBJECTPROPCODE_UNDEFINED                     = 0xD000;
+const MTP_OBJECTPROPCODE_STORAGEID                     = 0xDC01;
+const MTP_OBJECTPROPCODE_OBJECTFORMAT                  = 0xDC02;
+const MTP_OBJECTPROPCODE_PROTECTIONSTATUS              = 0xDC03;
+const MTP_OBJECTPROPCODE_OBJECTSIZE                    = 0xDC04;
+const MTP_OBJECTPROPCODE_ASSOCIATIONTYPE               = 0xDC05;
+const MTP_OBJECTPROPCODE_ASSOCIATIONDESC               = 0xDC06;
+const MTP_OBJECTPROPCODE_OBJECTFILENAME                = 0xDC07;
+const MTP_OBJECTPROPCODE_DATECREATED                   = 0xDC08;
+const MTP_OBJECTPROPCODE_DATEMODIFIED                  = 0xDC09;
+const MTP_OBJECTPROPCODE_KEYWORDS                      = 0xDC0A;
+const MTP_OBJECTPROPCODE_PARENT                        = 0xDC0B;
+const MTP_OBJECTPROPCODE_ALLOWEDFOLDERCONTENTS         = 0xDC0C;
+const MTP_OBJECTPROPCODE_HIDDEN                        = 0xDC0D;
+const MTP_OBJECTPROPCODE_SYSTEMOBJECT                  = 0xDC0E;
+const MTP_OBJECTPROPCODE_PERSISTENTUNIQUEOBJECTIDENTIFIER = 0xDC41;
+const MTP_OBJECTPROPCODE_SYNCID                        = 0xDC42;
+const MTP_OBJECTPROPCODE_PROPERTYBAG                   = 0xDC43;
+const MTP_OBJECTPROPCODE_NAME                          = 0xDC44;
+const MTP_OBJECTPROPCODE_CREATEDBY                     = 0xDC45;
+const MTP_OBJECTPROPCODE_ARTIST                        = 0xDC46;
+const MTP_OBJECTPROPCODE_DATEAUTHORED                  = 0xDC47;
+const MTP_OBJECTPROPCODE_DESCRIPTION                   = 0xDC48;
+const MTP_OBJECTPROPCODE_URLREFERENCE                  = 0xDC49;
+const MTP_OBJECTPROPCODE_LANGUAGELOCALE                = 0xDC4A;
+const MTP_OBJECTPROPCODE_COPYRIGHTINFORMATION          = 0xDC4B;
+const MTP_OBJECTPROPCODE_SOURCE                        = 0xDC4C;
+const MTP_OBJECTPROPCODE_ORIGINLOCATION                = 0xDC4D;
+const MTP_OBJECTPROPCODE_DATEADDED                     = 0xDC4E;
+const MTP_OBJECTPROPCODE_NONCONSUMABLE                 = 0xDC4F;
+const MTP_OBJECTPROPCODE_CORRUPTUNPLAYABLE             = 0xDC50;
+const MTP_OBJECTPROPCODE_PRODUCERSERIALNUMBER          = 0xDC51;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEFORMAT    = 0xDC81;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLESIZE      = 0xDC82;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEHEIGHT    = 0xDC83;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEWIDTH     = 0xDC84;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEDURATION  = 0xDC85;
+const MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEDATA      = 0xDC86;
+const MTP_OBJECTPROPCODE_WIDTH                         = 0xDC87;
+const MTP_OBJECTPROPCODE_HEIGHT                        = 0xDC88;
+const MTP_OBJECTPROPCODE_DURATION                      = 0xDC89;
+const MTP_OBJECTPROPCODE_USERRATING                    = 0xDC8A;
+const MTP_OBJECTPROPCODE_TRACK                         = 0xDC8B;
+const MTP_OBJECTPROPCODE_GENRE                         = 0xDC8C;
+const MTP_OBJECTPROPCODE_CREDITS                       = 0xDC8D;
+const MTP_OBJECTPROPCODE_LYRICS                        = 0xDC8E;
+const MTP_OBJECTPROPCODE_SUBSCRIPTIONCONTENTID         = 0xDC8F;
+const MTP_OBJECTPROPCODE_PRODUCEDBY                    = 0xDC90;
+const MTP_OBJECTPROPCODE_USECOUNT                      = 0xDC91;
+const MTP_OBJECTPROPCODE_SKIPCOUNT                     = 0xDC92;
+const MTP_OBJECTPROPCODE_LASTACCESSED                  = 0xDC93;
+const MTP_OBJECTPROPCODE_PARENTALRATING                = 0xDC94;
+const MTP_OBJECTPROPCODE_METAGENRE                     = 0xDC95;
+const MTP_OBJECTPROPCODE_COMPOSER                      = 0xDC96;
+const MTP_OBJECTPROPCODE_EFFECTIVERATING               = 0xDC97;
+const MTP_OBJECTPROPCODE_SUBTITLE                      = 0xDC98;
+const MTP_OBJECTPROPCODE_ORIGINALRELEASEDATE           = 0xDC99;
+const MTP_OBJECTPROPCODE_ALBUMNAME                     = 0xDC9A;
+const MTP_OBJECTPROPCODE_ALBUMARTIST                   = 0xDC9B;
+const MTP_OBJECTPROPCODE_MOOD                          = 0xDC9C;
+const MTP_OBJECTPROPCODE_DRMPROTECTION                 = 0xDC9D;
+const MTP_OBJECTPROPCODE_SUBDESCRIPTION                = 0xDC9E;
+const MTP_OBJECTPROPCODE_ISCROPPED                     = 0xDCD1;
+const MTP_OBJECTPROPCODE_ISCOLOURCORRECTED             = 0xDCD2;
+const MTP_OBJECTPROPCODE_IMAGEBITDEPTH                 = 0xDCD3;
+const MTP_OBJECTPROPCODE_FNUMBER                       = 0xDCD4;
+const MTP_OBJECTPROPCODE_EXPOSURETIME                  = 0xDCD5;
+const MTP_OBJECTPROPCODE_EXPOSUREINDEX                 = 0xDCD6;
+const MTP_OBJECTPROPCODE_TOTALBITRATE                  = 0xDE91;
+const MTP_OBJECTPROPCODE_BITRATETYPE                   = 0xDE92;
+const MTP_OBJECTPROPCODE_SAMPLERATE                    = 0xDE93;
+const MTP_OBJECTPROPCODE_NUMBEROFCHANNELS              = 0xDE94;
+const MTP_OBJECTPROPCODE_AUDIOBITDEPTH                 = 0xDE95;
+const MTP_OBJECTPROPCODE_BLOCKALIGNMENT                = 0xDE96;
+const MTP_OBJECTPROPCODE_SCANTYPE                      = 0xDE97;
+const MTP_OBJECTPROPCODE_COLOURRANGE                   = 0xDE98;
+const MTP_OBJECTPROPCODE_AUDIOWAVECODEC                = 0xDE99;
+const MTP_OBJECTPROPCODE_AUDIOBITRATE                  = 0xDE9A;
+const MTP_OBJECTPROPCODE_VIDEOFOURCCCODEC              = 0xDE9B;
+const MTP_OBJECTPROPCODE_VIDEOBITRATE                  = 0xDE9C;
+const MTP_OBJECTPROPCODE_FRAMESPERMILLISECOND          = 0xDE9D;
+const MTP_OBJECTPROPCODE_KEYFRAMEDISTANCE              = 0xDE9E;
+const MTP_OBJECTPROPCODE_BUFFERSIZE                    = 0xDE9F;
+const MTP_OBJECTPROPCODE_ENCODINGQUALITY               = 0xDEA0;
+const MTP_OBJECTPROPCODE_ENCODINGPROFILE               = 0xDEA1;
+const MTP_OBJECTPROPCODE_AUDIOENCODINGPROFILE          = 0xDEA2;
+
+//PIM Begin:
+const MTP_OBJECTPROPCODE_DISPLAYNAME                   = 0xDCE0;
+const MTP_OBJECTPROPCODE_BODYTEXT                      = 0xDCE1;
+const MTP_OBJECTPROPCODE_SUBJECT                       = 0xDCE2;
+const MTP_OBJECTPROPCODE_PRIORITY                      = 0xDCE3;
+const MTP_OBJECTPROPCODE_GIVENNAME                     = 0xDD00;
+const MTP_OBJECTPROPCODE_MIDDLENAMES                   = 0xDD01;
+const MTP_OBJECTPROPCODE_FAMILYNAME                    = 0xDD02;
+const MTP_OBJECTPROPCODE_PREFIX                        = 0xDD03;
+const MTP_OBJECTPROPCODE_SUFFIX                        = 0xDD04;
+const MTP_OBJECTPROPCODE_PHONETICGIVENNAME             = 0xDD05;
+const MTP_OBJECTPROPCODE_PHONETICFAMILYNAME            = 0xDD06;
+const MTP_OBJECTPROPCODE_EMAILPRIMARY                  = 0xDD07;
+const MTP_OBJECTPROPCODE_EMAILPERSONAL1                = 0xDD08;
+const MTP_OBJECTPROPCODE_EMAILPERSONAL2                = 0xDD09;
+const MTP_OBJECTPROPCODE_EMAILBUSINESS1                = 0xDD0A;
+const MTP_OBJECTPROPCODE_EMAILBUSINESS2                = 0xDD0B;
+const MTP_OBJECTPROPCODE_EMAILOTHERS                   = 0xDD0C;
+const MTP_OBJECTPROPCODE_PHONENUMBERPRIMARY            = 0xDD0D;
+const MTP_OBJECTPROPCODE_PHONENUMBERPERSONAL           = 0xDD0E;
+const MTP_OBJECTPROPCODE_PHONENUMBERPERSONAL2          = 0xDD0F;
+const MTP_OBJECTPROPCODE_PHONENUMBERBUSINESS           = 0xDD10;
+const MTP_OBJECTPROPCODE_PHONENUMBERBUSINESS2          = 0xDD11;
+const MTP_OBJECTPROPCODE_PHONENUMBERMOBIL              = 0xDD12;
+const MTP_OBJECTPROPCODE_PHONENUMBERMOBIL2             = 0xDD13;
+const MTP_OBJECTPROPCODE_FAXNUMBERPRIMARY              = 0xDD14;
+const MTP_OBJECTPROPCODE_FAXNUMBERPERSONAL             = 0xDD15;
+const MTP_OBJECTPROPCODE_FAXNUMBERBUSINESS             = 0xDD16;
+const MTP_OBJECTPROPCODE_PAGERNUMBER                   = 0xDD17;
+const MTP_OBJECTPROPCODE_PHONENUMBEROTHERS             = 0xDD18;
+const MTP_OBJECTPROPCODE_PRIMARYWEBADDRESS             = 0xDD19;
+const MTP_OBJECTPROPCODE_PERSONALWEBADDRESS            = 0xDD1A;
+const MTP_OBJECTPROPCODE_BUSINESSWEBADDRESS            = 0xDD1B;
+const MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS      = 0xDD1C;
+const MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS2     = 0xDD1D;
+const MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS3     = 0xDD1E;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALFULL     = 0xDD1F;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALLINE1    = 0xDD20;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALLINE2    = 0xDD21;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALCITY     = 0xDD22;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALREGION   = 0xDD23;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALPOSTALCODE = 0xDD24;
+const MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALCOUNTRY  = 0xDD25;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSFULL     = 0xDD26;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSLINE1    = 0xDD27;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSLINE2    = 0xDD28;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSCITY     = 0xDD29;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSREGION   = 0xDD2A;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSPOSTALCODE = 0xDD2B;
+const MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSCOUNTRY  = 0xDD2C;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERFULL        = 0xDD2D;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERLINE1       = 0xDD2E;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERLINE2       = 0xDD2F;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERCITY        = 0xDD30;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERREGION      = 0xDD31;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERPOSTALCODE  = 0xDD32;
+const MTP_OBJECTPROPCODE_POSTALADDRESSOTHERCOUNTRY     = 0xDD33;
+const MTP_OBJECTPROPCODE_ORGANIZATIONNAME              = 0xDD34;
+const MTP_OBJECTPROPCODE_PHONETICORGANIZATIONNAME      = 0xDD35;
+const MTP_OBJECTPROPCODE_ROLE                          = 0xDD36;
+const MTP_OBJECTPROPCODE_BIRTHDAY                      = 0xDD37;
+const MTP_OBJECTPROPCODE_MESSAGETO                     = 0xDD40;
+const MTP_OBJECTPROPCODE_MESSAGECC                     = 0xDD41;
+const MTP_OBJECTPROPCODE_MESSAGEBCC                    = 0xDD42;
+const MTP_OBJECTPROPCODE_MESSAGEREAD                   = 0xDD43;
+const MTP_OBJECTPROPCODE_MESSAGERECEIVETIME            = 0xDD44;
+const MTP_OBJECTPROPCODE_MESSAGESENDER                 = 0xDD45;
+const MTP_OBJECTPROPCODE_ACTIVITYBEGINTIME             = 0xDD50;
+const MTP_OBJECTPROPCODE_ACTIVITYENDTIME               = 0xDD51;
+const MTP_OBJECTPROPCODE_ACTIVITYLOCATION              = 0xDD52;
+const MTP_OBJECTPROPCODE_ACTIVITYREQUIREDATTENDEES     = 0xDD54;
+const MTP_OBJECTPROPCODE_ACTIVITYOPTIONALATTENDEES     = 0xDD55;
+const MTP_OBJECTPROPCODE_ACTIVITYRESOURCES             = 0xDD56;
+const MTP_OBJECTPROPCODE_ACTIVITYACCEPTEDED            = 0xDD57;
+const MTP_OBJECTPROPCODE_ACTIVITYTENTATIVE             = 0xDD58;
+const MTP_OBJECTPROPCODE_ACTIVITYDECLINED              = 0xDD59;
+const MTP_OBJECTPROPCODE_ACTIVITYREMINDERTIME          = 0xDD5A;
+const MTP_OBJECTPROPCODE_ACTIVITYOWNER                 = 0xDD5B;
+const MTP_OBJECTPROPCODE_ACTIVITYSTATUS                = 0xDD5C;
+
+const MTP_OBJECTPROPCODE_OWNER                    = 0xDD5D;
+const MTP_OBJECTPROPCODE_EDITOR                   = 0xDD5E;
+const MTP_OBJECTPROPCODE_WEBMASTER                = 0xDD5F;
+const MTP_OBJECTPROPCODE_URLSOURCE                = 0xDD60;
+const MTP_OBJECTPROPCODE_URLDESTINATION           = 0xDD61;
+const MTP_OBJECTPROPCODE_TIME_BOOKMARK            = 0xDD62;
+const MTP_OBJECTPROPCODE_OBJECT_BOOKMARK          = 0xDD63;
+const MTP_OBJECTPROPCODE_BYTE_BOOKMARK            = 0xDD64;
+const MTP_OBJECTPROPCODE_DATA_OFFSET              = 0xDD65;
+const MTP_OBJECTPROPCODE_DATA_LENGTH              = 0xDD66;
+const MTP_OBJECTPROPCODE_DATA_UNITS               = 0xDD67;
+const MTP_OBJECTPROPCODE_DATA_REFERENCED_OBJECT_RESOURCE = 0xDD68;
+const MTP_OBJECTPROPCODE_BACK_REFERENCES          = 0xDD69;
+const MTP_OBJECTPROPCODE_LASTBUILDDATE            = 0xDD70;
+const MTP_OBJECTPROPCODE_TIMETOLIVE               = 0xDD71;
+const MTP_OBJECTPROPCODE_MEDIAGUID                = 0xDD72;
+//PIM End;
+
+const MTP_OBJECTPROPCODE_VENDOREXTENSION_FIRST    = 0xD800;
+const MTP_OBJECTPROPCODE_VENDOREXTENSION_LAST     = 0xDBFF;
+
+//==============================================
+// MTP Specific DataTypes
+//==============================================
+
+UnsignedNumber MTPFormFlag
+{
+    Size = 1;
+    DisplayFormat = FormatString("0X%0X (%s)", this, MTPFormFlagsToStringTable(this));
+}
+
+UnsignedNumber MTPObjectHandle
+{
+    Size = 4;
+    DisplayFormat = FormatString("0X%X (%u)", this, this);
+}
+
+UnsignedNumber MTPStorageID
+{
+    Size = 4;
+    DisplayFormat = FormatString("0X%08X", this);
+}
+
+UnsignedNumber MTPOperation
+{
+    Size = 2;
+    DisplayFormat = FormatString( "0X%04X (%s)", this, MTPOpcodeToStringTable(this));
+}
+
+UnsignedNumber MTPResponseCode
+{
+    Size = 2;
+    DisplayFormat = FormatString("0X%04X (%s)", this,MTPResponseCodeToStringTable(this));
+}
+UnsignedNumber MTPFormatCode
+{
+    Size = 2;
+    DisplayFormat = FormatString("0X%04X (%s)", this, MTPFormatCodeToStringTable(this));
+}
+UnsignedNumber MTPEventCode
+{
+    Size = 2;
+    DisplayFormat = FormatString( "0X%04X (%s)", this, MTPEventCodeToStringTable(this));
+}
+UnsignedNumber MTPDevicePropCode
+{
+    Size = 2;
+    DisplayFormat = FormatString( "0X%04X (%s)", this, MTPDevicePropCodeToStringTable(this));
+}
+UnsignedNumber MTPObjectPropCode
+{
+    Size = 2;
+    DisplayFormat = FormatString( "0X%04X (%s)", this, MTPObjectPropCodeToStringTable(this));
+}
+
+UnsignedNumber MTPDatatypeDT
+{
+    Size = 2;
+    DisplayFormat = FormatString("%s",MTPDatatypeToStringTable(this));
+}
+
+UnsignedNumber MTPTransactionID
+{
+    Size = 4;
+    DisplayFormat = FormatString("%u",this);
+}
+
+UnsignedNumber MTPUINT128
+{
+    Size = 16;
+    DisplayFormat = FormatString( "%I64u (0x%I64X)", this, this );
+}
+
+struct MTPStringWithLength = FormatString("%s",StringValue)
+{
+    UINT8 StrLengthInCharacters;
+    UnicodeString(StrLengthInCharacters) StringValue;
+}
+
+struct MTPPropEnumValue(MTPDatatypeParam) = FormatString("%u items in Enumeration", EnumElementCount)
+{
+    UINT16 EnumElementCount;
+    MTPPropValue(MTPDataTypeParam) EnumElement[EnumElementCount];
+}
+
+struct MTPPROPERTYKEY = FormatString("%s.%-3u", fmtid.ToString, pid)
+{
+    WPDGUID fmtid;
+    UINT32  pid;
+}
+
+[RegisterBefore(NetEvent.UserData, MicrosoftWindowsWPDMTPClassDriver, "{21B7C16E-C5AF-4A69-A74A-7245481C1B97}")]
+[Property.wpderror = 0]
+Protocol  WPDMTP = property.ETLSummary
+{
+    [BuildConversationWithParent, conversation.ConversationDescription = ""]
+    switch
+    {
+        case (NetEvent.Header.Descriptor.Level.ToString == "WINEVENT_LEVEL_ERROR"):
+            ReportWPDError( "See description for details") MTPDriverReportedOperationalError;
+        case (NetEvent.Header.Descriptor.Level.ToString == "WINEVENT_LEVEL_WARNING"):
+            ReportWPDError( "See description for details") MTPDriverReportedOperationalWarning;
+    }
+
+    switch(property.EventID)
+    {
+        case 1000: [property.ETLSummary = this.ToString]  WPD_I_DRIVER_START_SUCCESS WPD_I_DRIVER_START_SUCCESS;
+        case 1001: [property.ETLSummary = this.ToString]  WPD_I_DRIVER_SUSPEND_SETTINGS WPD_I_DRIVER_SUSPEND_SETTINGS;
+        case 1002: [property.ETLSummary = this.ToString]  WPD_I_DRIVER_ENTER_IDLE WPD_I_DRIVER_ENTER_IDLE;
+        case 1003: [property.ETLSummary = this.ToString]  WPD_I_DRIVER_EXIT_IDLE WPD_I_DRIVER_EXIT_IDLE;
+        case 1004: [property.ETLSummary = this.ToString]  WPD_W_DRIVER_CANCEL_REQUEST WPD_W_DRIVER_CANCEL_REQUEST;
+        case 1005: [property.ETLSummary = this.ToString]  WPD_W_DRIVER_HAS_WORKAROUND WPD_W_DRIVER_HAS_WORKAROUND;
+        case 1006: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_START_FAILED WPD_E_DRIVER_START_FAILED;
+        case 1007: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_OPERATION_TIMEOUT WPD_E_DRIVER_OPERATION_TIMEOUT;
+        case 1008: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_REQUEST_TIMEOUT WPD_E_DRIVER_REQUEST_TIMEOUT;
+        case 1009: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_TRANSPORT_ERROR_DATA_LOSS WPD_E_DRIVER_TRANSPORT_ERROR_DATA_LOSS;
+        case 1010: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_TRANSPORT_ERROR_DATA_CORRUPTION WPD_E_DRIVER_TRANSPORT_ERROR_DATA_CORRUPTION;
+        case 1011: [property.ETLSummary = this.ToString]  WPD_E_SERVICEPROPDESC_DATASET_ERROR WPD_E_SERVICEPROPDESC_DATASET_ERROR;
+        case 1012: [property.ETLSummary = this.ToString]  WPD_E_SERVICEPROPDESC_ERROR1 WPD_E_SERVICEPROPDESC_ERROR1;
+        case 1013: [property.ETLSummary = this.ToString]  WPD_E_SERVICEPROPDESC_ERROR2 WPD_E_SERVICEPROPDESC_ERROR2;
+        case 1014: [property.ETLSummary = this.ToString]  WPD_E_SERVICEPROPDESC_ERROR3 WPD_E_SERVICEPROPDESC_ERROR3;
+        case 1015: [property.ETLSummary = this.ToString]  WPD_E_OBJECTPROPDESC_DATASET_ERROR WPD_E_OBJECTPROPDESC_DATASET_ERROR;
+        case 1016: [property.ETLSummary = this.ToString]  WPD_E_INTERDEPENDENTPROPDESC_DATASET_ERROR WPD_E_INTERDEPENDENTPROPDESC_DATASET_ERROR;
+        case 1017: [property.ETLSummary = this.ToString]  WPD_E_SERVICECAPABILITIES_DATASET_ERROR WPD_E_SERVICECAPABILITIES_DATASET_ERROR;
+        case 1018: [property.ETLSummary = this.ToString]  WPD_E_OBJECTPROPDESC_ERROR1 WPD_E_OBJECTPROPDESC_ERROR1;
+        case 1019: [property.ETLSummary = this.ToString]  WPD_E_OBJECTPROPDESC_ERROR2 WPD_E_OBJECTPROPDESC_ERROR2;
+        case 1020: [property.ETLSummary = this.ToString]  WPD_E_OBJECTPROPDESC_ERROR3 WPD_E_OBJECTPROPDESC_ERROR3;
+        case 1021: [property.ETLSummary = this.ToString]  WPD_E_DATASET_TOO_SHORT WPD_E_DATASET_TOO_SHORT;
+        case 1022: [property.ETLSummary = this.ToString]  WPD_E_DEVICEINFO_DATASET_ERROR WPD_E_DEVICEINFO_DATASET_ERROR;
+        case 1023: [property.ETLSummary = this.ToString]  WPD_E_STORAGEINFO_DATASET_ERROR WPD_E_STORAGEINFO_DATASET_ERROR;
+        case 1024: [property.ETLSummary = this.ToString]  WPD_E_SERVICEINFO_DATASET_ERROR WPD_E_SERVICEINFO_DATASET_ERROR;
+        case 1025: [property.ETLSummary = this.ToString]  WPD_E_OBJECTINFO_DATASET_ERROR WPD_E_OBJECTINFO_DATASET_ERROR;
+        case 1026: [property.ETLSummary = this.ToString]  WPD_E_DEVICEPROPDESC_DATASET_ERROR WPD_E_DEVICEPROPDESC_DATASET_ERROR;
+        case 1027: [property.ETLSummary = this.ToString]  WPD_E_STRING_DATASET_ERROR WPD_E_STRING_DATASET_ERROR;
+        case 1028: [property.ETLSummary = this.ToString]  WPD_E_DATATYPE_DATASET_ERROR WPD_E_DATATYPE_DATASET_ERROR;
+        case 1029: [property.ETLSummary = this.ToString]  WPD_E_SERVICEIDS_BUFFER_TOO_SHORT WPD_E_SERVICEIDS_BUFFER_TOO_SHORT;
+        case 1030: [property.ETLSummary = this.ToString]  WPD_W_SERVICEIDS_BUFFER_TOO_LONG WPD_W_SERVICEIDS_BUFFER_TOO_LONG;
+        case 1031: [property.ETLSummary = this.ToString]  WPD_E_SERVICEIDS_BUFFER_TOO_MANY WPD_E_SERVICEIDS_BUFFER_TOO_MANY;
+        case 1032: [property.ETLSummary = this.ToString]  WPD_E_STORAGEIDS_BUFFER_TOO_SHORT WPD_E_STORAGEIDS_BUFFER_TOO_SHORT;
+        case 1033: [property.ETLSummary = this.ToString]  WPD_W_STORAGEIDS_BUFFER_TOO_LONG WPD_W_STORAGEIDS_BUFFER_TOO_LONG;
+        case 1034: [property.ETLSummary = this.ToString]  WPD_E_STORAGEIDS_BUFFER_TOO_MANY WPD_E_STORAGEIDS_BUFFER_TOO_MANY;
+        case 1035: [property.ETLSummary = this.ToString]  WPD_E_OBJECTHANDLES_BUFFER_TOO_SHORT WPD_E_OBJECTHANDLES_BUFFER_TOO_SHORT;
+        case 1036: [property.ETLSummary = this.ToString]  WPD_W_OBJECTHANDLES_BUFFER_TOO_LONG WPD_W_OBJECTHANDLES_BUFFER_TOO_LONG;
+        case 1037: [property.ETLSummary = this.ToString]  WPD_E_OBJECTHANDLES_BUFFER_TOO_MANY WPD_E_OBJECTHANDLES_BUFFER_TOO_MANY;
+        case 1038: [property.ETLSummary = this.ToString]  WPD_E_OBJECTREFERENCES_BUFFER_TOO_SHORT WPD_E_OBJECTREFERENCES_BUFFER_TOO_SHORT;
+        case 1039: [property.ETLSummary = this.ToString]  WPD_W_OBJECTREFERENCES_BUFFER_TOO_LONG WPD_W_OBJECTREFERENCES_BUFFER_TOO_LONG;
+        case 1040: [property.ETLSummary = this.ToString]  WPD_E_OBJECTREFERENCES_BUFFER_TOO_MANY WPD_E_OBJECTREFERENCES_BUFFER_TOO_MANY;
+        case 1041: [property.ETLSummary = this.ToString]  WPD_W_DUPLICATE_PROPKEY WPD_W_DUPLICATE_PROPKEY;
+        case 1042: [property.ETLSummary = this.ToString]  WPD_W_DUPLICATE_FORMAT WPD_W_DUPLICATE_FORMAT;
+        case 1043: [property.ETLSummary = this.ToString]  WPD_W_DUPLICATE_METHOD WPD_W_DUPLICATE_METHOD;
+        case 1044: [property.ETLSummary = this.ToString]  WPD_W_DUPLICATE_EVENT WPD_W_DUPLICATE_EVENT;
+        case 1045: [property.ETLSummary = this.ToString]  WPD_W_DUPLICATE_PROPCODE WPD_W_DUPLICATE_PROPCODE;
+        case 1046: [property.ETLSummary = this.ToString]  WPD_W_AMBIGUOUS_PROPCODE WPD_W_AMBIGUOUS_PROPCODE;
+        case 1047: [property.ETLSummary = this.ToString]  WPD_W_EMPTY_HINTS_DATABLOCK WPD_W_EMPTY_HINTS_DATABLOCK;
+        case 1048: [property.ETLSummary = this.ToString]  WPD_W_INVALID_HINTS_DATABLOCK WPD_W_INVALID_HINTS_DATABLOCK;
+        case 1049: [property.ETLSummary = this.ToString]  WPD_E_PROPDESC_BAD_DATATYPE WPD_E_PROPDESC_BAD_DATATYPE;
+        case 1050: [property.ETLSummary = this.ToString]  WPD_E_PROPDESC_MAXLENGTH_TOO_LARGE WPD_E_PROPDESC_MAXLENGTH_TOO_LARGE;
+        case 1051: [property.ETLSummary = this.ToString]  WPD_E_PROPDESC_BAD_FORMFLAG WPD_E_PROPDESC_BAD_FORMFLAG;
+        case 1052: [property.ETLSummary = this.ToString]  WPD_W_ABSTRACT_PROPERTY_REDEFINED WPD_W_ABSTRACT_PROPERTY_REDEFINED;
+        case 1053: [property.ETLSummary = this.ToString]  WPD_W_ABSTRACT_FORMAT_REDEFINED WPD_W_ABSTRACT_FORMAT_REDEFINED;
+        case 1054: [property.ETLSummary = this.ToString]  WPD_W_ABSTRACT_METHOD_REDEFINED WPD_W_ABSTRACT_METHOD_REDEFINED;
+        case 1055: [property.ETLSummary = this.ToString]  WPD_W_ABSTRACT_EVENT_REDEFINED WPD_W_ABSTRACT_EVENT_REDEFINED;
+        case 1056: [property.ETLSummary = this.ToString]  WPD_W_SERVICEINFO_EXTRA_DATA_IGNORED WPD_W_SERVICEINFO_EXTRA_DATA_IGNORED;
+        case 1057: [property.ETLSummary = this.ToString]  WPD_W_SERVICE_USES_CONCRETE_SERVICE WPD_W_SERVICE_USES_CONCRETE_SERVICE;
+        case 1058: [property.ETLSummary = this.ToString]  WPD_W_SERVICE_USES_UNDEFINED_SERVICE WPD_W_SERVICE_USES_UNDEFINED_SERVICE;
+        case 1059: [property.ETLSummary = this.ToString]  WPD_W_UNKNOWN_SERVICE_FLAG WPD_W_UNKNOWN_SERVICE_FLAG;
+        case 1060: [property.ETLSummary = this.ToString]  WPD_E_ARRAY_VALUES_TOO_MANY WPD_E_ARRAY_VALUES_TOO_MANY;
+        case 1061: [property.ETLSummary = this.ToString]  WPD_W_BULK_SERVICE_CAPABILITIES_NOT_SUPPORTED WPD_W_BULK_SERVICE_CAPABILITIES_NOT_SUPPORTED;
+        case 1062: [property.ETLSummary = this.ToString]  WPD_W_BULK_SERVICE_PROPERTIES_NOT_SUPPORTED WPD_W_BULK_SERVICE_PROPERTIES_NOT_SUPPORTED;
+        case 1063: [property.ETLSummary = this.ToString]  WPD_W_SERVICE_METHOD_UNDEFINED_ASSOCIATION_FORMAT WPD_W_SERVICE_METHOD_UNDEFINED_ASSOCIATION_FORMAT;
+        case 1064: [property.ETLSummary = this.ToString]  WPD_W_BULK_FORMAT_CAPABILITIES_NOT_SUPPORTED WPD_W_BULK_FORMAT_CAPABILITIES_NOT_SUPPORTED;
+        case 1065: [property.ETLSummary = this.ToString]  WPD_E_FORMATCAPABILITIES_DATASET_ERROR WPD_E_FORMATCAPABILITIES_DATASET_ERROR;
+        case 1066: [property.ETLSummary = this.ToString]  WPD_E_DRIVER_TRANSPORT_MTPBT_LINK_DESTROYED WPD_E_DRIVER_TRANSPORT_MTPBT_LINK_DESTROYED;
+        case 1067: [property.ETLSummary = this.ToString]  WPD_E_OBJECTPROPSSUPPORTED_DATASET_ERROR WPD_E_OBJECTPROPSSUPPORTED_DATASET_ERROR;
+        case 1068: [property.ETLSummary = this.ToString]  WPD_E_GETOBJECTPROPLIST_DATASET_ERROR WPD_E_GETOBJECTPROPLIST_DATASET_ERROR;
+
+        case 2000: // WPD_I_MTPDRIVER_COMMAND (MTP Command)
+        [property.ETLSummary = FormatString("Sending  Cmd :%-46s TranID:%3s ", 
+                    CommandSent.MTPOpcode.ToString, CommandTransactionID.ToString);]
+        _struct 
+        {
+            UINT32 CommandSessionID     = FormatString("%d", this);
+            MTPTransactionID CommandTransactionID;
+            MTPCommandStructure CommandSent;
+        }
+
+        case 2006: // WPD_I_MTPDRIVER_COMMAND_AND_DATA (MTP dataout command and dataset)
+        case 2007: // WPD_I_MTPDRIVER_COMMAND_AND_DATA_FOR_SETPROPVALUE
+        [property.ETLSummary = FormatString("Sending  Cmd :%-46s TranID:%3s (with dataset)", 
+                    CommandSent.MTPOpcode.ToString, CommandTransactionID.ToString);]
+        _struct 
+        {
+            UINT32 CommandSessionID     = FormatString("%d", this);
+            MTPTransactionID CommandTransactionID;
+            MTPCommandStructure CommandSent;
+            MTPDataSetOUT(CommandSent.MTPOpcode) DataSetOfDataPhase;
+        }
+
+        case 2001: // WPD_I_MTPDRIVER_DATA_AND_RESPONSE [MTP Response (with Command and Dataset - for applicable MTP commands)]
+        [property.ETLSummary = FormatString("Received Resp:%-46s TranID:%3s Response:%s",
+                    CorrespondingCommand.MTPOpcode.ToString,
+                    ResponseTransactionID.ToString,
+                    ResponseReceived.ToString);]
+        _struct
+        {
+            UINT32 ResponseSessionID     = FormatString("%d", this);
+            MTPTransactionID ResponseTransactionID;
+
+            MTPCommandStructure CorrespondingCommand;
+            [Property.HRForRetrievingResponseCode = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]_struct{}
+
+            switch
+            {
+                //The following bytes will be valid only if Hr == S_OK from transport
+                case (Property.HRForRetrievingResponseCode == 0):
+                        MTPResponseStructure ResponseReceived;
+                default:
+                    [
+                       Property.MTPParserErrorMessage = FormatString("ERROR:Received %s from transport driver while acquiring Response details.",
+                                                            WPDErrorTable(Property.HRForRetrievingResponseCode));
+                       Property.ETLSummary += Property.MTPParserErrorMessage;
+                    ]
+                    _struct{
+                       ReportWPDError(Property.MTPParserErrorMessage) TransportDriverIssueInResponseProcessing;
+                       Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    }
+            }
+            // There is no need to check if the response code is  MTP_RESPONSECODE_OK because, the driver 
+            // is instrumented not to log any dataset if the response code is not OK.            
+            MTPDataSetIN(CorrespondingCommand.MTPOpcode) DataSetOfDataPhase;
+        }
+
+        case 2002: // WPD_I_MTPDRIVER_DATA_AND_RESPONSE_FOR_GETPROPVALUE [MTP Response (with Command and Data) for GetObject/DevicePropValue]
+        [property.ETLSummary = FormatString("Received Resp:%-46s TranID:%3s Response:%s (with Dataset)",
+                    CorrespondingCommand.MTPOpcode.ToString,ResponseTransactionID.ToString,ResponseReceived.ToString);]
+        _struct
+        {
+            UINT32 ResponseSessionID     = FormatString("%d", this);
+            MTPTransactionID ResponseTransactionID;
+
+            MTPCommandStructure CorrespondingCommand;
+
+            MTPResponseStructure ResponseReceived;
+            
+            // There is no need to check if the response code is  MTP_RESPONSECODE_OK because, the driver 
+            // is instrumented not to log any dataset if the response code is not OK.            
+            MTPDataSetIN(CorrespondingCommand.MTPOpcode) DataSetOfDataPhase;
+
+        }
+
+        case 2003: // WPD_I_MTPDRIVER_RESPONSE_ONLY MTP [Response Only]
+        [property.ETLSummary = FormatString("Received Resp:%s", ResponseReceived.ToString);]
+        _struct
+        {
+
+            UINT32 ResponseSessionID     = FormatString("%d", this);
+            MTPTransactionID ResponseTransactionID;
+            [Property.HRForRetrievingResponseCode = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]_struct{}
+
+            switch
+            {
+                //The following bytes will be valid only if Hr==0 from transport
+                case (Property.HRForRetrievingResponseCode == 0): 
+                    [Property.ETLSummary += ResponseReceived.ToString]
+                    MTPResponseStructure ResponseReceived;            
+
+                default:
+                    [
+                       Property.MTPParserErrorMessage = FormatString("ERROR:Received %s from transport driver while acquiring Response details.",
+                                                            WPDErrorTable(Property.HRForRetrievingResponseCode));
+                       Property.ETLSummary += Property.MTPParserErrorMessage;
+                    ]
+                    _struct{
+                       ReportWPDError(Property.MTPParserErrorMessage) TransportDriverIssueInResponseProcessing;
+                       Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    }
+                            
+            }
+        }
+
+        case 2004:// WPD_I_MTPDRIVER_EVENT_FROM_DEVICE [MTP event from data]
+        [Property.ETLSummary = "Event: TransactionID = " + EventTransactionID.ToString;]
+        _struct
+        {
+            UINT32 EventSessionID     = FormatString("%d", this);
+            MTPTransactionID EventTransactionID;                
+
+            //Check hrfromtransport and decide on parsing the upcoming bytes.
+            [Property.HRFromTransport = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+
+            switch
+            {
+                //The following bytes will be valid only if Hr==0 from transport
+                case (Property.HRFromTransport == 0): 
+                [Property.ETLSummary =  FormatString("%s %s",Property.ETLSummary, EventReceived.ToString);]
+                struct EventReceived = FormatString("%s", MTPEventCode.ToString)
+                {
+                    MTPEventCode MTPEventCode;
+                    UINT32 EventParamCount;
+                    UINT32 Param[EventParamCount];
+                }
+                default:
+                [Property.MTPParserErrorMessage=FormatString("ERROR:Received %s from transport driver while acquiring MTPEvent details.",WPDErrorTable(Property.HRFromTransport));
+                 Property.ETLSummary += Property.MTPParserErrorMessage;]
+                _struct
+                {
+                   ReportWPDError(Property.MTPParserErrorMessage) TransportDriverIssueInEventProcessing;
+                   Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                }
+            }
+        }
+
+        case 2005: //WPD_I_MTPDRIVER_DATA_BULKGETOBJPROPS_BY_OBJFORMAT
+        [Property.ETLSummary = "Bulk GetObjectProplist data received"]
+        struct BulkGetObjectPropListData = FormatString("%d bytes received", Size)
+        {
+            [Property.bMoreData = TRUE;]
+            UINT32 Size;
+
+            while [bMoreData == TRUE]
+            {
+                switch
+                {
+                    case ((FrameLength-Offset) < 4+2+2):
+                        [Property.bMoreData= FALSE;]_struct{}
+                    default:
+                        MTPPropListItem Item;
+                }
+            }
+            switch
+            {
+                case ((FrameLength-Offset) > 0):
+                ReportParserWarning( "WPDMTP","Possible partial data") PartialData;
+            }
+        }
+        default: [property.ETLSummary = "Non existant EventID"]struct{};
+    }
+}
+
+Struct  WPD_I_DRIVER_START_SUCCESS = "MTP Driver started successfully." {}; // Empty Struct
+Struct  WPD_I_DRIVER_SUSPEND_SETTINGS = FormatString("Device will enter the suspend state if idle for %s seconds.", Seconds.ToString)
+{
+    UINT32 Seconds;
+}
+Struct  WPD_I_DRIVER_ENTER_IDLE = FormatString("Device is entering the idle state (Idle state: %s; Return code: %s).", State.ToString, hr.ToString)
+{
+    UINT32 State;
+    WPDHR hr;
+}
+Struct  WPD_I_DRIVER_EXIT_IDLE = FormatString("Device is resuming operation from idle state (Idle state: %s; Return code: %s).", State.ToString, hr.ToString)
+{
+    UINT32 State;
+    WPDHR hr;
+}
+Struct  WPD_W_DRIVER_CANCEL_REQUEST = FormatString("Driver has cancelled the operation %s", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_W_DRIVER_HAS_WORKAROUND = FormatString("Customizing for '%s, %s, %s' (%s).", Manufacturer.ToString, Model.ToString, Version.ToString, HackModel.ToString)
+{
+    UnicodeString Manufacturer;
+    UnicodeString Model;
+    UnicodeString Version;
+    UINT32 HackModel;
+}
+Struct  WPD_E_DRIVER_START_FAILED = FormatString("Driver has failed to start, HRESULT %s.", hr.ToString)
+{
+    WPDHR hr;
+}
+Struct  WPD_E_DRIVER_OPERATION_TIMEOUT = FormatString("Device has failed to respond to the operation %s in 5 minutes, attempted to cancel the operationm HRESULT %s.", Code.ToString, hr.ToString)
+{
+    UINT32 Code;
+    WPDHR hr;
+}
+Struct  WPD_E_DRIVER_REQUEST_TIMEOUT = FormatString("Device has failed to communicate its status when processing operation %s.", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_E_DRIVER_TRANSPORT_ERROR_DATA_LOSS = FormatString("Bluetooth transport driver has detected a data discontinuity error: (expected sequence ID %s, but recevied %s).", ExpectedValue.ToString, ActualValue.ToString)
+{
+    UINT32 ExpectedValue;
+    UINT32 ActualValue;
+}
+Struct  WPD_E_DRIVER_TRANSPORT_ERROR_DATA_CORRUPTION = FormatString("Bluetooth transport driver has detected a data integrity error in a bulk data transfer operation: (expected CRC-32 value %s, but received %s).", ExpectedValue.ToString, ActualValue.ToString)
+{
+    UINT32 ExpectedValue;
+    UINT32 ActualValue;
+}
+Struct  WPD_E_SERVICEPROPDESC_DATASET_ERROR = FormatString("Error in ServicePropList Dataset: Service ID %s, Property ID %s, DataSet Offset %s", Code.ToString, Prop.ToString, Offset.ToString)
+{
+    UINT32 Code;
+    UINT32 Prop;
+    UINT32 Offset;
+}
+Struct  WPD_E_SERVICEPROPDESC_ERROR1 = "FixedArray form flag used with non-array type" {}; // Empty Struct
+Struct  WPD_E_SERVICEPROPDESC_ERROR2 = "ByteArray form flag used with non-AUINT8 type" {}; // Empty Struct
+Struct  WPD_E_SERVICEPROPDESC_ERROR3 = "LongString form flag used with non-AUINT16 type" {}; // Empty Struct
+Struct  WPD_E_OBJECTPROPDESC_DATASET_ERROR = FormatString("Error in ObjectPropDesc Dataset: Format ID %s, Property ID %s, DataSet Offset %s", Code.ToString, Prop.ToString, Offset.ToString)
+{
+    UINT32 Code;
+    UINT32 Prop;
+    UINT32 Offset;
+}
+Struct  WPD_E_INTERDEPENDENTPROPDESC_DATASET_ERROR = FormatString("Error in InterdependentPropDesc Dataset: Format ID %s, DataSet Offset %s", Code.ToString, Offset.ToString)
+{
+    UINT32 Code;
+    UINT32 Offset;
+}
+Struct  WPD_E_SERVICECAPABILITIES_DATASET_ERROR = FormatString("Error in ServiceCapabilities Dataset: Service ID %s, Format ID %s, DataSet Offset %s", Code.ToString, Prop.ToString, Offset.ToString)
+{
+    UINT32 Code;
+    UINT32 Prop;
+    UINT32 Offset;
+}
+Struct  WPD_E_OBJECTPROPDESC_ERROR1 = "FixedArray form flag used with non-array type" {}; // Empty Struct
+Struct  WPD_E_OBJECTPROPDESC_ERROR2 = "ByteArray form flag used with non-AUINT8 type" {}; // Empty Struct
+Struct  WPD_E_OBJECTPROPDESC_ERROR3 = "LongString form flag used with non-AUINT16 type" {}; // Empty Struct
+Struct  WPD_E_DATASET_TOO_SHORT = "Dataset not large enough for expected data" {}; // Empty Struct
+Struct  WPD_E_DEVICEINFO_DATASET_ERROR = FormatString("Error in DeviceInfo Dataset: DataSet Offset %s", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_E_STORAGEINFO_DATASET_ERROR = FormatString("Error in StorageInfo Dataset: Storage ID %s, DataSet Offset %s", ID.ToString, Offset.ToString)
+{
+    UINT32 ID;
+    UINT32 Offset;
+}
+Struct  WPD_E_SERVICEINFO_DATASET_ERROR = FormatString("Error in ServiceInfo Dataset: Service ID %s, DataSet Offset %s", ID.ToString, Offset.ToString)
+{
+    UINT32 ID;
+    UINT32 Offset;
+}
+Struct  WPD_E_OBJECTINFO_DATASET_ERROR = FormatString("Error in ObjectInfo Dataset: Object ID %s, DataSet Offset %s", ID.ToString, Offset.ToString)
+{
+    UINT32 ID;
+    UINT32 Offset;
+}
+Struct  WPD_E_DEVICEPROPDESC_DATASET_ERROR = FormatString("Error in DevicePropDesc Dataset: Property ID %s, DataSet Offset %s", ID.ToString, Offset.ToString)
+{
+    UINT32 ID;
+    UINT32 Offset;
+}
+Struct  WPD_E_STRING_DATASET_ERROR = "Invalid string specification" {}; // Empty Struct
+Struct  WPD_E_DATATYPE_DATASET_ERROR = FormatString("Unable to parse value for MTP DataType %s", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_E_SERVICEIDS_BUFFER_TOO_SHORT = FormatString("Error in ServiceIDs: declared %s elements, but only space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_W_SERVICEIDS_BUFFER_TOO_LONG = FormatString("Warning in ServiceIDs: declared %s elements, but space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_E_SERVICEIDS_BUFFER_TOO_MANY = FormatString("Error in ServiceIDs: count of %s exceeds system limits", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_E_STORAGEIDS_BUFFER_TOO_SHORT = FormatString("Error in StorageIDs: declared %s elements, but only space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_W_STORAGEIDS_BUFFER_TOO_LONG = FormatString("Warning in StorageIDs: declared %s elements, but space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_E_STORAGEIDS_BUFFER_TOO_MANY = FormatString("Error in StorageIDs: count of %s exceeds system limits", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_E_OBJECTHANDLES_BUFFER_TOO_SHORT = FormatString("Error in ObjectHandles: declared %s elements, but only space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_W_OBJECTHANDLES_BUFFER_TOO_LONG = FormatString("Warning in ObjectHandles: declared %s elements, but space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_E_OBJECTHANDLES_BUFFER_TOO_MANY = FormatString("Error in ObjectHandles: count of %s exceeds system limits", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_E_OBJECTREFERENCES_BUFFER_TOO_SHORT = FormatString("Error in ObjectReferences: declared %s elements, but only space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_W_OBJECTREFERENCES_BUFFER_TOO_LONG = FormatString("Warning in ObjectReferences: declared %s elements, but space to hold %s elements", Expected.ToString, Actual.ToString)
+{
+    UINT32 Expected;
+    UINT32 Actual;
+}
+Struct  WPD_E_OBJECTREFERENCES_BUFFER_TOO_MANY = FormatString("Error in ObjectReferences: count of %s exceeds system limits", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_W_DUPLICATE_PROPKEY = FormatString("Duplicate Namespace and ID %s.%s (ignored)", PKeyGuid.ToString, PKeyId.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 PKeyId;
+}
+Struct  WPD_W_DUPLICATE_FORMAT = FormatString("Duplicate Format ID %s (ignored)", Guid.ToString)
+{
+    UnicodeString Guid;
+}
+Struct  WPD_W_DUPLICATE_METHOD = FormatString("Duplicate Method ID %s (ignored)", Guid.ToString)
+{
+    UnicodeString Guid;
+}
+Struct  WPD_W_DUPLICATE_EVENT = FormatString("Duplicate Event ID %s (ignored)", Guid.ToString)
+{
+    UnicodeString Guid;
+}
+Struct  WPD_W_DUPLICATE_PROPCODE = FormatString("Duplicate PropCode ID %s for Service Format %s (ignored)", Prop.ToString, Code.ToString)
+{
+    UINT32 Code;
+    UINT32 Prop;
+}
+Struct  WPD_W_AMBIGUOUS_PROPCODE = FormatString("Ambiguous mapping of Namespace and ID %s.%s to both PropCodes %s and %s (ignored)", PKeyGuid.ToString, PKeyId.ToString, CurrentCode.ToString, OriginalCode.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 PKeyId;
+    UINT32 CurrentCode;
+    UINT32 OriginalCode;
+}
+Struct  WPD_W_EMPTY_HINTS_DATABLOCK = "Empty Hints Service data block" {}; // Empty Struct
+Struct  WPD_W_INVALID_HINTS_DATABLOCK = "Hints Service data block is of invalid size" {}; // Empty Struct
+Struct  WPD_E_PROPDESC_BAD_DATATYPE = FormatString("Unrecognized MTP DataType %s", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_E_PROPDESC_MAXLENGTH_TOO_LARGE = FormatString("MaxLength of %s is too large for associated MTP DataType", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_E_PROPDESC_BAD_FORMFLAG = FormatString("Unrecognized MTP FormFlag %s", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_W_ABSTRACT_PROPERTY_REDEFINED = FormatString("Abstract property %s.%s redefined by service %s", PKeyGuid.ToString, PKeyId.ToString, ID.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 PKeyId;
+    UINT32 ID;
+}
+Struct  WPD_W_ABSTRACT_FORMAT_REDEFINED = FormatString("Abstract format %s redefined by service %s", PKeyGuid.ToString, ID.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_ABSTRACT_METHOD_REDEFINED = FormatString("Abstract method %s redefined by service %s", PKeyGuid.ToString, ID.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_ABSTRACT_EVENT_REDEFINED = FormatString("Abstract event %s redefined by service %s", PKeyGuid.ToString, ID.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_SERVICEINFO_EXTRA_DATA_IGNORED = FormatString("Warning in ServiceInfo Dataset: Service ID %s, left-over bytes ignored at end of dataset", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct  WPD_W_SERVICE_USES_CONCRETE_SERVICE = FormatString("Ignoring reference by Service ID %s to concrete service %s", ID.ToString, PKeyGuid.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_SERVICE_USES_UNDEFINED_SERVICE = FormatString("Service ID %s referencing unknown service %s", ID.ToString, PKeyGuid.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_UNKNOWN_SERVICE_FLAG = FormatString("Service ID %s specifies unknown service flag %s (expecting Standard or Abstract)", ID.ToString, Code.ToString)
+{
+    UINT32 ID;
+    UINT32 Code;
+}
+Struct  WPD_E_ARRAY_VALUES_TOO_MANY = FormatString("Error in Dataset: count of %s exceeds system limits", Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct  WPD_W_BULK_SERVICE_CAPABILITIES_NOT_SUPPORTED = "Device does not support bulk version of GetServiceCapabilities" {}; // Empty Struct
+Struct  WPD_W_BULK_SERVICE_PROPERTIES_NOT_SUPPORTED = "Device does not support bulk version of GetServiceProperties" {}; // Empty Struct
+Struct  WPD_W_SERVICE_METHOD_UNDEFINED_ASSOCIATION_FORMAT = FormatString("Method ID %s referencing unknown association format %s", PKeyGuid.ToString, ID.ToString)
+{
+    UnicodeString PKeyGuid;
+    UINT32 ID;
+}
+Struct  WPD_W_BULK_FORMAT_CAPABILITIES_NOT_SUPPORTED = "Device does not support bulk version of GetFormatCapabilities" {}; // Empty Struct
+Struct  WPD_E_FORMATCAPABILITIES_DATASET_ERROR = FormatString("Error in FormatCapabilities Dataset: Format ID %s, DataSet Offset %s", Code.ToString, Offset.ToString)
+{
+    UINT32 Code;
+    UINT32 Offset;
+}
+Struct  WPD_E_DRIVER_TRANSPORT_MTPBT_LINK_DESTROYED = FormatString("Bluetooth transport driver has terminated an MTP Bluetooth connection due to failure to recover from a transport error (MTP OpCode %s).", Code.ToString)
+{
+    UINT32 Code;
+}
+Struct WPD_E_OBJECTPROPSSUPPORTED_DATASET_ERROR = FormatString("Error in GetObjectPropsSupported Dataset: DataSet Offset:" + Offset.ToString)
+{
+    UINT32 Offset;
+}
+Struct WPD_E_GETOBJECTPROPLIST_DATASET_ERROR = FormatString("Error in GetObjectPropList Dataset: DataSet Offset:" + Offset.ToString)
+{
+    UINT32 Offset;
+}
+
+struct MTPCommandStructure = FormatString("%s (%d params)", MTPOpcode.ToString, ParamCount)
+{
+    MTPOperation MTPOpcode;
+    UINT32 ParamCount   = FormatString("%d", this);
+
+    [index = 0, Maxloopcount = ParamCount]
+    while [index < ParamCount]
+    {
+        UINT32 Param = FormatString("%-25s = %#X (%d)",WPDMTPCommandParamNameLookup(MTPOpcode, index+1), this, this);
+        [index = index + 1]struct{}
+    }
+}
+
+// If MTPResponseCode is not MTP_RESPONSECODE_OK, the param count will be 0 -- As per the instrumentation logic 
+// in the driver (also implies no parameters will be retrieved/consumed)
+struct MTPResponseStructure = MTPResponseCode.ToString
+{
+    MTPResponseCode MTPResponseCode;
+    switch
+    {
+        case (MTPResponseCode != MTP_RESPONSECODE_OK):
+            ReportWPDError( "ERROR:"+MTPResponseCode.ToString) ResponseCodeNotOK;
+    }    
+
+    UINT32 RespParamCount;
+    
+    [index = 0, Maxloopcount = RespParamCount]
+    while [index < RespParamCount]
+    {
+     UINT32 Param = FormatString("%s = %#X (%d)",
+                     WPDMTPResponseParamNameLookup(WPDMTP.CorrespondingCommand.MTPOpcode, index+1), this, this);
+     [index = index + 1]_struct{}
+    }
+}
+
+struct MTPDataSetOUT(paramMTPOpcode) = FormatString("%s", Property.DataSetMessage)
+{
+    switch(paramMTPOpcode)
+    {
+        case MTP_OPCODE_SETOBJECTPROPVALUE:
+        case MTP_OPCODE_SETDEVICEPROPVALUE:
+        case MTP_OPCODE_CREATESESSION:
+            MtpDatatypeDT PropValMtpDatatype; 
+    }
+    UINT32 DataSetSize = FormatString("%u bytes", this);
+    switch(paramMTPOpcode)
+    {
+        case MTP_OPCODE_SENDOBJECTINFO        :
+            struct MTP_OPCODE_SENDOBJECTINFOData = ""
+            {
+                MTPObjectInfo ObjectInfo;
+            }
+        case MTP_OPCODE_SETOBJECTPROPLIST     :
+        case MTP_OPCODE_SENDOBJECTPROPLIST    :
+        case MTP_OPCODE_UPDATEOBJECTPROPLIST  :
+        case MTP2_OPCODE_UPDATEOBJECTPROPLIST :
+        case MTP_OPCODE_DELETEOBJECTPROPLIST  :
+        case MTP2_OPCODE_DELETEOBJECTPROPLIST :
+        case MTP_OPCODE_SETSERVICEPROPERTYLIST:
+        case MTP2_OPCODE_SETSERVICEPROPERTYLIST:
+        case MTP_OPCODE_DELETESERVICEPROPLIST :
+        case MTP2_OPCODE_DELETESERVICEPROPLIST:
+            [Property.DatasetMessage = FormatString("(To Device) ObjectPropList:%u Elements", ObjectPropList.ElementCount);]
+            struct MTP_OPCODE_OBJECTPROPLISTData = ""
+            {
+                MTPPropValueList(paramMTPOpcode) ObjectPropList;
+            }
+
+        case MTP_OPCODE_SETOBJECTREFERENCES   :
+            [Property.DatasetMessage = FormatString("(To Device) %d ObjectReferences: %s",NumberOfReferences,ObjectReference.ToString);]
+            struct MTP_OPCODE_SETOBJECTREFERENCESData = ""
+            {
+                UINT32 NumberOfReferences;
+                UINT32 ObjectReference[NumberOfReferences] = FormatString("%s", this);
+            }
+        case MTP_OPCODE_SETOBJECTPROPVALUE:
+        case MTP_OPCODE_SETDEVICEPROPVALUE:
+        case MTP_OPCODE_CREATESESSION:
+            [Property.DatasetMessage = FormatString("(To Device)");]
+            struct PROPVALUEDataSet = ""
+            {
+                MTPPropValue(PropValMtpDatatype) PropValue;
+            }
+
+        default:
+            switch
+            {
+                case(DataSetSize!=0):
+                [Property.DatasetMessage = FormatString("Not expecting a dataphase for this MTP operation. But sent %d bytes", DataSetSize);]
+                _struct 
+                {
+                    Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    ReportWPDError("Non-Empty data sent for operation") DataReceivedForNoDataPhaseMTPOperation;
+                }
+                default: [Property.DatasetMessage = FormatString("Dataphase not applicable for this MTP operation", DataSetSize);]_struct{}
+            }
+     }
+}
+
+struct MTPDataSetIN(paramMTPOpcode) = FormatString("%s", Property.DataSetMessage)
+{
+    switch(paramMTPOpcode)
+    {
+        case MTP_OPCODE_GETOBJECTPROPVALUE:
+        case MTP_OPCODE_GETDEVICEPROPVALUE:
+            MtpDatatypeDT PropValMtpDatatype; 
+    }
+    UINT32 DataSetSize = FormatString("%u bytes", this);
+    switch(paramMTPOpcode)
+    {
+        // These MTP commands do not have a dataphase involved.
+        case MTP_OPCODE_OPENSESSION           :
+        case MTP_OPCODE_CLOSESESSION          :
+        case MTP_OPCODE_GETNUMOBJECTS         :
+        case MTP_OPCODE_DELETEOBJECT          :
+        case MTP_OPCODE_INITIATECAPTURE       :
+        case MTP_OPCODE_FORMATSTORE           :
+        case MTP_OPCODE_RESETDEVICE           :
+        case MTP_OPCODE_SELFTEST              :
+        case MTP_OPCODE_SETOBJECTPROTECTION   :
+        case MTP_OPCODE_POWERDOWN             :
+        case MTP_OPCODE_RESETDEVICEPROPVALUE  :
+        case MTP_OPCODE_TERMINATECAPTURE      :
+        case MTP_OPCODE_MOVEOBJECT            :
+        case MTP_OPCODE_COPYOBJECT            :
+        case MTP_OPCODE_INITIATEOPENCAPTURE   :
+        case MTP_OPCODE_UPDATEDEVICEFIRMWARE  :
+        case MTP_OPCODE_OPENOBJECTSTREAM      :
+        case MTP_OPCODE_CLOSEOBJECTSTREAM     :
+        case MTP_OPCODE_SEEKOBJECTSTREAM      :
+            switch
+            {
+                case(DataSetSize!=0): 
+                [Property.DatasetMessage = FormatString("Dataphase not applicable for this MTP operation. But received %d bytes", DataSetSize);]
+                _struct 
+                {
+                    Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    ReportWPDError("Non-Empty data received for operation") DataReceivedForNoDataPhaseMTPOperation;
+                }
+                default: [Property.DatasetMessage = FormatString("Dataphase not applicable for this MTP operation", DataSetSize);]_struct{}
+            }        
+        // These operations receive actual data from device. Dataphase not logged.
+        case MTP_OPCODE_GETOBJECT             :
+        case MTP_OPCODE_GETTHUMB              :
+        case MTP_OPCODE_GETPARTIALOBJECT      :
+        case MTP_OPCODE_READOBJECTSTREAM      :
+    
+            switch
+            {
+                case(DataSetSize!=0): 
+                [Property.DatasetMessage = FormatString("Object Data not logged. But received %d bytes", DataSetSize);]
+                _struct
+                {
+                    Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    ReportWPDError("Non-Empty data received for operation") DataReceivedForObjectTransferMTPOperation;
+                }
+                default: [Property.DatasetMessage = FormatString("Object Data not logged");]_struct{}
+            }
+        // The data phase for commands with data direction Initiator->Responder is not logged
+        case MTP_OPCODE_SENDOBJECTINFO        :
+        case MTP_OPCODE_SENDOBJECT            :
+        case MTP_OPCODE_SETDEVICEPROPVALUE    :
+        case MTP_OPCODE_SETOBJECTPROPVALUE    :
+        case MTP_OPCODE_SETOBJECTPROPLIST     :
+        case MTP_OPCODE_SENDOBJECTPROPLIST    :
+        case MTP_OPCODE_SETOBJECTREFERENCES   :
+        case MTP_OPCODE_SETSERVICEPROPERTYLIST:
+        case MTP2_OPCODE_SETSERVICEPROPERTYLIST:
+        case MTP_OPCODE_UPDATEOBJECTPROPLIST  :
+        case MTP2_OPCODE_UPDATEOBJECTPROPLIST :
+        case MTP_OPCODE_DELETEOBJECTPROPLIST  :
+        case MTP2_OPCODE_DELETEOBJECTPROPLIST :
+        case MTP_OPCODE_DELETESERVICEPROPLIST :
+        case MTP2_OPCODE_DELETESERVICEPROPLIST:
+        case MTP_OPCODE_WRITEOBJECTSTREAM     :
+            switch
+            {
+                case(DataSetSize!=0):
+                [Property.DatasetMessage = FormatString("(To device). But received %d bytes", DataSetSize);]
+                _struct
+                {
+                    Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    ReportWPDError("Non-Empty data received for operation") DataReceivedForInitiatorToResponderMTPOperation;
+                }
+                default: [Property.DatasetMessage = FormatString("(To device) See the command frame for the dataset");]_struct{}
+            }
+        case MTP_OPCODE_GETSTORAGEIDS:
+            [Property.DatasetMessage = FormatString("(From Device) Storage IDs: %s", StorageID.ToString);]
+            struct MTP_OPCODE_GETSTORAGEIDSData = ""
+            {
+                UINT32 NumberOfStorageIDs;
+                MTPStorageID StorageID[NumberOfStorageIDs] = FormatString("%s", this);
+            }
+
+        case MTP_OPCODE_GETOBJECTHANDLES:
+            [Property.DatasetMessage = FormatString("(From Device) ObjectHandle count: %d", NumberOfObjectHandles);]
+            struct MTP_OPCODE_GETOBJECTHANDLESData = ""
+            {
+                UINT32 NumberOfObjectHandles;
+                MTPObjectHandle ObjectHandle[NumberOfObjectHandles] = FormatString("%s", this);
+            }
+    
+        case MTP_OPCODE_GETOBJECTPROPVALUE:
+            [Property.DatasetMessage = FormatString("(From Device)");]
+            struct MTP_OPCODE_GETOBJECTPROPVALUEData = ""
+            {
+                MTPPropValue(PropValMtpDatatype) PropValue;
+            }
+
+        case MTP_OPCODE_GETDEVICEPROPVALUE:
+            [Property.DatasetMessage = FormatString("(From Device)");]
+            struct MTP_OPCODE_GETOBJECTPROPVALUEData = ""
+            {
+                MTPPropValue(PropValMtpDatatype) PropValue;
+            }
+        case MTP_OPCODE_GETOBJECTPROPSSUPPORTED:
+            [Property.DatasetMessage = FormatString("(From Device) %d Properties Supported",NumberOfProperties );]
+            struct MTP_OPCODE_GETOBJECTPROPSSUPPORTEDData = ""
+            {
+                UINT32 NumberOfProperties;
+                MTPObjectPropCode SupportedProperty[NumberOfProperties];
+            }
+        case MTP_OPCODE_GETOBJECTREFERENCES:
+            [Property.DatasetMessage = FormatString("(From Device) %d ObjectReferences: %s",NumberOfReferences,ObjectReference.ToString);]
+            struct MTP_OPCODE_GETOBJECTREFERENCESData = ""    
+            {
+                UINT32 NumberOfReferences;
+                UINT32 ObjectReference[NumberOfReferences] = FormatString("%s", this);
+            }
+        case MTP_OPCODE_GETSERVICEIDS:
+        case MTP2_OPCODE_GETSERVICEIDS:
+            [Property.DatasetMessage = FormatString("(From Device) Service IDs: %s", ServiceID.ToString);]
+            struct MTP_OPCODE_GETSERVICEIDSData
+            {
+                UINT32 NumberOfServiceIDs;
+                UINT32 ServiceID[NumberOfServiceIDs] = FormatString("%s", this);
+            }
+        case MTP_OPCODE_GETDEVICEINFO:
+            [Property.DatasetMessage = FormatString("(From Device) DeviceInfoDataSet: %s %s %s #%s", 
+                Manufacturer.StringValue, Model.StringValue, DeviceVersion.StringValue, SerialNumber.StringValue);]
+            struct MTP_OPCODE_GETDEVICEINFOData = ""
+            {
+                UINT16 StandardVersion = FormatString("         %d", this);
+                UINT32 VendorExtId     = FormatString("             0x%08x", this);
+                UINT16 VendorExtVersion= FormatString("        %d", this);
+                
+                MTPStringWithLength VendorExtDesc = FormatString("           %s", VendorExtDesc.StringValue);
+                UINT16 FunctionalMode  = FormatString("          %d", this);
+
+                [OpcodeCount         = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+                MTPOperation SupportedOpcodes[OpcodeCount] = FormatString("       %3d Operations", OpcodeCount);
+
+                [EventcodeCount      = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+                MTPEventCode SupportedEvents[EventcodeCount] = FormatString("        %3d Events", EventcodeCount);
+
+                [DevicePropCodeCount = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+                MTPDevicePropCode SupportedDeviceProps[DevicePropCodeCount] = FormatString("   %3d Device Properties", DevicePropCodeCount);
+
+                [CaptureFormatCount  = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+                MTPFormatCode SupportedCaptureFormats[CaptureFormatCount] = FormatString("%3d Capture Formats", CaptureFormatCount);
+
+                [ObjectFormatCount   = UINT32(FrameData,Offset);FrameOffset = Offset + 4;]
+                MTPFormatCode SupportedObjectFormats[ObjectFormatCount] = FormatString(" %3d Object Formats", ObjectFormatCount);
+
+
+                MTPStringWithLength Manufacturer =  FormatString("            %s", Manufacturer.StringValue);
+                MTPStringWithLength Model        =  FormatString("                   %s", Model.StringValue);
+                MTPStringWithLength DeviceVersion=  FormatString("           %s", DeviceVersion.StringValue);
+                MTPStringWithLength SerialNumber =  FormatString("            %s", SerialNumber.StringValue);
+
+            }
+        case MTP_OPCODE_GETSTORAGEINFO:
+            [Property.DatasetMessage = FormatString("(From Device) StorageInfoDataset: %s %s",
+                StorageDescription.StringValue,VolumeIdentifier.StringValue);]
+            struct MTP_OPCODE_GETSTORAGEINFOData = ""
+            {
+                UINT16 StorageType        = FormatString("       %s (0X%04X)", MTPStorageTypeToStringTable(this),this );
+                UINT16 FileSystemType     = FormatString("    %s (0X%04X)", MTPFileSystemTypeToStringTable(this),this);
+                UINT16 AccessCapability   = FormatString("  %s (0X%04X)", MTPAccessCapabilityToStringTable(this),this);
+                UINT64 MaxCapacityInBytes = FormatString("%d (%#X)", this, this);
+                UINT64 FreeSpaceInBytes   = FormatString("  %d (%#X)", this, this);
+                UINT32 FreeSpaceInObjects = (this == 0xFFFFFFFF)?"Field not used (0xFFFFFFFF)":FormatString("%d, (%#X)", this, this);
+                MTPStringWithLength StorageDescription = FormatString("%s",StorageDescription.StringValue );
+                MTPStringWithLength VolumeIdentifier   = FormatString("  %s",VolumeIdentifier.StringValue );
+            }
+        case MTP_OPCODE_GETDEVICEPROPDESC:
+            [Property.DatasetMessage = FormatString("(From Device) DevicePropDesc: %s", PropertyCode.ToString);]
+            struct MTP_OPCODE_GETDEVICEPROPDESCData = ""
+            {
+                MTPDevicePropCode PropertyCode;
+                MTPDatatypeDT MTPDatatype;
+                UINT8  AccessRights =(this==0x00?"Get (0x00)":(this==0x01?"Get/Set (0x01)":FormatString("Unknown:0x%02x",this)));
+                MTPPropValue(MTPDatatype) DefaultValue;
+                MTPPropValue(MTPDatatype) CurrentValue;
+                UINT8 FormFlag = FormatString("    %s (0X%X)", MTPFormFlagsToStringTable(this), this);
+                switch(FormFlag)
+                {
+                    case (MTP_FORMFLAGS_RANGE):
+                    _struct
+                    {
+                        MTPPropValue(MTPDatatype) MinimumValue;
+                        MTPPropValue(MTPDatatype) MaximumValue;
+                        MTPPropValue(MTPDatatype) StepSize = FormatString("    %s",this);
+                    }
+                    case (MTP_FORMFLAGS_ENUM):
+                        MTPPropEnumValue(MTPDatatype) Enumeration;
+                }
+            }
+
+        case MTP_OPCODE_GETSERVICEPROPERTYLIST:
+        case MTP2_OPCODE_GETSERVICEPROPERTYLIST:
+            [Property.DatasetMessage = FormatString("(From Device) ServicePropList: %u Elements", ServicePropertyList.ElementCount);]
+            struct MTP_OPCODE_GETSERVICEPROPERTYLISTData = ""
+            {
+                MTPPropValueList(paramMTPOpcode) ServicePropertyList;
+            }
+
+        case MTP_OPCODE_GETOBJECTPROPLIST:
+            [Property.DatasetMessage = FormatString("(From Device) ObjectPropList:%u Elements", ObjectPropList.ElementCount);]
+            struct MTP_OPCODE_GETOBJECTPROPLISTData = ""
+            {
+                MTPPropValueList(paramMTPOpcode) ObjectPropList;
+            }
+        case MTP_OPCODE_GETOBJECTINFO:
+            [Property.DatasetMessage = FormatString("(From Device) ObjectInfoDataset");]
+            struct MTP_OPCODE_GETOBJECTINFOData = ""
+            {
+                MTPObjectInfo ObjectInfo;
+            }
+        case MTP_OPCODE_GETOBJECTPROPDESC:
+            [Property.DatasetMessage = FormatString("(From Device) ObjectPropDesc Dataset");]
+            struct MTP_OPCODE_GETOBJECTPROPDESCData = ""
+            {
+                MTPPropDesc(FALSE, FALSE, FALSE) ObjectPropDesc;
+            }
+    
+        case MTP_OPCODE_GETINTERDEPENDENTPROPDESC:
+            [Property.DatasetMessage = FormatString("(From Device) InterdependentPropDesc Dataset %s",InterdependentPropDesc.ToString );]
+            struct MTP_OPCODE_GETINTERDEPENDENTPROPDESCData = ""
+            {
+                MTPInterdependentPropDesc InterdependentPropDesc;
+            }
+
+        case MTP2_OPCODE_GETFORMATCAPABILITIES:
+        case MTP_OPCODE_GETFORMATCAPABILITIES:
+            [Property.DatasetMessage = FormatString("(From Device) FormatCapabilityList Dataset: %u Formats Found", NumOfFormatsInFormatCapabilityList );]
+            struct MTP_OPCODE_GETFORMATCAPABILITIESData = ""
+            {
+                UINT32 NumOfFormatsInFormatCapabilityList;
+                
+                struct FormatCapability[NumOfFormatsInFormatCapabilityList] = FormatString("%3u ObjectPropDescs parsed for Format:%s", NumObjPropDesc, FormatCode.ToString)
+                {
+                    MTPFormatCode FormatCode;
+                    UINT32 NumObjPropDesc;
+                    MTPPropDesc(FALSE, TRUE, FALSE) ObjectPropDesc[NumObjPropDesc];
+                    MTPInterdependentPropDesc InterdependentPropDesc;
+                }
+            }
+
+        case MTP_OPCODE_GETSERVICECAPABILITIES:
+        case MTP2_OPCODE_GETSERVICECAPABILITIES:
+            [Property.DatasetMessage = FormatString("(From Device) ServiceCapabilityList Dataset: %u Formats Found", NumOfFormatsInServiceCapabilityList);]
+            struct MTP_OPCODE_GETSERVICECAPABILITIESData = ""
+            {
+                UINT32 NumOfFormatsInServiceCapabilityList;
+                struct ServiceCapability[NumOfFormatsInServiceCapabilityList] = FormatString("%3u SvcObjectPropDescs parsed for Format:%s", NumSvcObjPropDesc, FormatCode.ToString)
+                {
+                    MTPFormatCode FormatCode;
+                    UINT32 NumSvcObjPropDesc;
+                    MTPPropDesc(TRUE, FALSE, FALSE) ServiceObjectPropDesc[NumSvcObjPropDesc];
+                    MTPInterdependentPropDesc InterdependentPropDesc;                                                            
+                }
+            }
+
+        case MTP_OPCODE_GETSERVICEINFO:
+        case MTP2_OPCODE_GETSERVICEINFO:
+            [Property.DatasetMessage = FormatString("(From Device) ServiceInfo Dataset for Service: %s(0x%x)", ServiceName.ToString, ServiceID);]
+            struct MTP_OPCODE_GETSERVICEINFOData = ""
+            {
+                UINT32 ServiceID;
+                MTPStorageID SvcStorageID;
+                GUID(true) ServicePUID;
+                UINT32 ServiceVersion;
+                WPDGUID ServiceType;
+
+                MTPStringWithLength ServiceName;
+                UINT32 ServiceFlags;
+                UINT32 BaseServiceIDs;
+                UINT32 NumOfUsesServiceIDs;
+                WPDGUID UsesServiceID[NumOfUsesServiceIDs];
+
+                struct ServiceProperties = FormatString("%3u properties", NumOfProperties)
+                {
+                    UINT32 NumOfProperties;
+                    struct ServiceProperty[NumOfProperties] 
+                            = FormatString("Propcode:%s PropKey:%s PropName:%s", PropCode.ToString, PropKey.ToString, PropName.ToString)
+                    {
+                        MTPObjectPropCode  PropCode;
+                        MTPPROPERTYKEY PropKey;
+                        MTPStringWithLength PropName;
+                    }
+                }
+
+                struct ServiceFormats = FormatString("%3u formats", NumOfFormats)
+                {
+                    UINT32 NumOfFormats;
+                    struct ServiceFormatInfo[NumOfFormats]
+                            = FormatString("FmtCode:%s FmtIntfGUID:%s FmtInfName:%s", 
+                                FormatCode.ToString, FormatInterfaceGUID.ToString, FormatInterfaceName.ToString)
+                    {
+                        MTPFormatCode  FormatCode;
+                        WPDGUID FormatInterfaceGUID;
+                        MTPStringWithLength FormatInterfaceName;
+    
+                        MTPFormatCode  BaseFormatCode;
+                        MTPStringWithLength MimeType;
+                    }
+                }
+                
+                struct ServiceMethods = FormatString("%3u Methods", NumOfMethods)
+                {
+                    UINT32 NumOfMethods;
+                    struct ServiceMethodInfo[NumOfMethods] 
+                            = FormatString("MethFmtCode:%s MethGUID:%s MethName:%s", 
+                                MethodFormatCode.ToString, MethodGUID.ToString, MethodName.ToString)
+                    {
+                        MTPFormatCode MethodFormatCode;
+                        WPDGUID MethodGUID;
+                        MTPStringWithLength MethodName;
+                        
+                        MTPFormatCode ObjectAssociationFormatCode;
+                    }
+                }
+                
+                struct ServiceEvents = FormatString("%3u Events", NumOfEvents)
+                {
+                    UINT32 NumOfEvents;
+                    struct ServiceEventInfo[NumOfEvents] 
+                            = FormatString("EventCode:%s EventGUID:%s EventName:%s", EventCode.ToString, EventGUID.ToString, EventName.ToString)
+                    {
+                        MTPFormatCode EventCode;
+                        WPDGUID    EventGUID;
+                        MTPStringWithLength EventName;
+                    }
+                }
+
+                UINT32 NumBytesOfExtendedData;
+                Blob(NumBytesOfExtendedData) ExtendedData;            
+            }
+        case MTP_OPCODE_GETSERVICEPROPERTIES:
+        case MTP2_OPCODE_GETSERVICEPROPERTIES:
+            [Property.DatasetMessage = FormatString("(From Device) ServiceProperties");]
+            struct MTP_OPCODE_GETSERVICEPROPERTIESData = ""
+            {
+                UINT32 NumOfSvcPropDescs;
+                MtpPropDesc(FALSE, FALSE, TRUE) ServicePropDesc[NumOfSvcPropDescs];
+            }
+
+        default: 
+            [Property.DatasetMessage = FormatString("Unknown MTPOperation: %s", MTPOperation(paramMTPOpcode,0));]
+            _struct
+            {
+                Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                ReportWPDError( "Unknown MTPOperation: "+MTPOperation(paramMTPOpcode,0)) UnknownMTPOperation;
+            }
+    }// End switch(paramMTPOpcode)
+    Blob(FrameLength-Offset) ExtraUnparsedDataReceivedInDataphase;
+}
+
+struct MTPInterdependentPropDesc = FormatString("%u InterDependencies/PropDescArrays", Property.NumOfInterdependencies)
+{
+    switch
+    {
+        // MTP Spec states the field length as 2 bytes but vista implementation expects 4
+        // So check if the count exceeds 0xFFFF. If so, assume 2 bytes.
+        case (((FrameLength-Offset) >= 4) && UINT32(FrameData, FrameOffset)>0xFFFF):
+            [Property.NumOfInterdependencies]
+            UINT16 NumOfInterDependenciesUINT16;
+        default:
+            [Property.NumOfInterdependencies]
+            UINT32 NumOfInterDependenciesUINT32;
+    }
+
+    struct PropDescArray[Property.NumOfInterdependencies] = FormatString("%u PropDescs in this PropDescArray", Property.NumOfPropDescs)
+    {
+        switch
+        {
+            // MTP Spec states the field length as 2 bytes but vista implementation expects 4
+            // So check if the count exceeds 0xFFFF. If so, assume 2 bytes.
+            case (((FrameLength-Offset) >= 4) && UINT32(FrameData, FrameOffset)>0xFFFF):
+                [Property.NumOfPropDescs]
+                UINT16 NumOfPropDescsUINT16;
+            default:
+                [Property.NumOfPropDescs]
+                UINT32 NumOfPropDescsUINT32;
+        }
+        MTPPropDesc(FALSE, FALSE, FALSE) PropDesc[Property.NumOfPropDescs];
+    }
+}
+
+struct MTPPropDesc(bServiceCapability, bFormatCapability, bServicePropDesc) = 
+    bServiceCapability?
+    (FormatString("Propcode:%-50s Datatype:%-18s FormFlag: %-35s DefaultValue:%s ",
+        FormatString("%s[%s]",PropertyCode.ToString,SvcExt_PropertyName), MTPDatatype.ToString, FormFlag.ToString, DefaultValue.ToString)):
+    (FormatString("Propcode:%-50s Datatype:%-18s FormFlag: %-35s DefaultValue:%s ",
+        PropertyCode.ToString, MTPDatatype.ToString, FormFlag.ToString, DefaultValue.ToString))
+{
+    MTPObjectPropCode PropertyCode;
+    MTPDatatypeDT MTPDatatype;
+    UINT8  AccessRights =(this==0x00?"Get (0X00)":(this==0x01?"Get/Set (0X01)":FormatString("Unknown:0X%02X",this)));
+
+    switch
+    {
+        case (bServicePropDesc == FALSE):
+        _struct 
+        {
+            MTPPropValue(MTPDatatype) DefaultValue;
+            UINT32 GroupCode;
+        }
+    }
+
+    [Property.FormFlagVariable]    
+    MTPFormFlag FormFlag;
+
+    switch
+    {
+        case (bServiceCapability == TRUE):
+        switch(FormFlag)
+        {
+            case MTP_FORMFLAGS_SVCEXT_OBJECTPROP:
+            [Property.FormFlagVariable = MTP_FORMFLAGS_SVCEXT_OBJECTPROPValues.FormFlagSvcExtObjectProp;
+             Property.SvcExt_PropertyName = PropName.ToString]
+            struct MTP_FORMFLAGS_SVCEXT_OBJECTPROPValues = FormatString("Property:%s", PropName.StringValue)
+            {
+                MTPPROPERTYKEY PropKey;
+                MTPStringWithLength PropName;
+
+                MTPFormFlag FormFlagSvcExtObjectProp;
+            }
+
+            case MTP_FORMFLAGS_SVCEXT_METHODPARAM:
+            [Property.FormFlagVariable = MTP_FORMFLAGS_SVCEXT_METHODPARAMValues.FormFlagSvcExtMethodParam;
+            Property.SvcExt_PropertyName = PropName.ToString]
+            struct MTP_FORMFLAGS_SVCEXT_METHODPARAMValues = FormatString("Property:%s", PropName.StringValue)
+            {
+                MTPPROPERTYKEY PropKey;
+                MTPStringWithLength PropName;
+                UINT8 ParamType = FormatString("%s (0X%02X)", this, this);
+                UINT8 ParamOrder;
+                MTPFormFlag FormFlagSvcExtMethodParam;
+                
+            }
+        }        
+    }    
+    switch
+    {
+        case (Property.FormFlagVariable == MTP_FORMFLAGS_NONE) : _struct{}
+
+        case (Property.FormFlagVariable == MTP_FORMFLAGS_RANGE):
+            _struct
+            {
+                MTPPropValue(MTPDatatype) RangeMinimumValue;
+                MTPPropValue(MTPDatatype) RangeMaximumValue;
+                MTPPropValue(MTPDatatype) RangeStepSize = FormatString("%s",this);
+            }
+
+        case (Property.FormFlagVariable == MTP_FORMFLAGS_ENUM):
+            MTPPropEnumValue(MTPDatatype) Enumeration;
+
+        case ((bServiceCapability == TRUE) || (bFormatCapability == TRUE || (bServicePropDesc == TRUE))):
+        switch(Property.FormFlagVariable)
+        {
+            case MTP_FORMFLAGS_DATETIME    : _struct{} // No additional info available
+            case MTP_FORMFLAGS_FIXEDARRAY  : UINT32 FixedArrayElementCount;
+            case MTP_FORMFLAGS_REGEX       : MTPStringWithLength RegExString;
+            case MTP_FORMFLAGS_BYTEARRAY   : UINT32 ByteArrayElementCount;
+            case MTP_FORMFLAGS_LONGSTRING  : UINT32 LongStringElementCount;
+            case MTP_FORMFLAGS_SVCEXT_OBJECTID : _struct{} // No Additional info avaiable
+            default:
+                _struct {
+                ReportWPDError("Unexpected Form"+Property.FormFlagVariable) UnrecognizedMTPFormFlag;
+                Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;                
+                }
+        }
+        // We do not parse other form flags
+        default : Blob(FrameLength - Offset) IgnoredBytes;
+        
+    }
+    
+}                        
+
+struct MTPPropValue(MTPDataTypeParam) = FormatString("%s", Property.MTPPropValueStr)
+{
+    switch(MTPDataTypeParam)
+    {
+        case MTP_DATATYPE_STRING : [Property.MTPPropValueStr=this.ToString] MTPStringWithLength PropValue;
+        case MTP_DATATYPE_INT128 :
+        case MTP_DATATYPE_UINT128: [Property.MTPPropValueStr=this.ToString] GUID(true) UINT128AsGUID;
+        case MTP_DATATYPE_INT8   : [Property.MTPPropValueStr=this.ToString] INT8   Int8Value  = FormatString("%d (0X%02X)", this, this);
+        case MTP_DATATYPE_UINT8  : [Property.MTPPropValueStr=this.ToString] UINT8  UInt8Value = FormatString("%u (0X%02X)", this, this);
+        case MTP_DATATYPE_INT16  : [Property.MTPPropValueStr=this.ToString] INT16  Int16Value = FormatString("%d (0X%04X)", this, this);
+        case MTP_DATATYPE_UINT16 : [Property.MTPPropValueStr=this.ToString] UINT16 UInt16Value= FormatString("%u (0X%04X)", this, this);
+        case MTP_DATATYPE_INT32  : [Property.MTPPropValueStr=this.ToString] INT32  Int32Value = FormatString("%d (0X%08X)", this, this);
+        case MTP_DATATYPE_UINT32 : [Property.MTPPropValueStr=this.ToString] UINT32 UInt32Value= FormatString("%u (0X%08X)", this, this);
+        case MTP_DATATYPE_INT64  : [Property.MTPPropValueStr=this.ToString] INT64  Int64Value = FormatString("%d (0X%016X)", this, this);
+        case MTP_DATATYPE_UINT64 : [Property.MTPPropValueStr=this.ToString] UINT64 UInt64Value= FormatString("%u (0X%016X)", this, this);
+
+        default:
+        switch
+        {
+            case ((MTPDataTypeParam & 0xF000) == MTP_DATATYPE_ARRAYMASK):
+              [Property.MTPPropValueStr = Array.ToString]
+              struct Array =  FormatString("Array of %s (%d elements)",MTPDatatypeToStringTable(MTPDataTypeParam&0x0FFF), ArrayElementCount)
+              {
+                UINT32 ArrayElementCount;
+                switch(MTPDatatypeParam)
+                {
+                    case MTP_DATATYPE_AINT8   : INT8   Int8Item[ArrayElementCount];
+                    case MTP_DATATYPE_AUINT8  : UINT8  UInt8Item[ArrayElementCount];
+                    case MTP_DATATYPE_AINT16  : INT16  Int16Item[ArrayElementCount];
+                    case MTP_DATATYPE_AUINT16 : UINT16 UInt16Item[ArrayElementCount];
+                    case MTP_DATATYPE_AINT32  : INT32  Int32Item[ArrayElementCount];
+                    case MTP_DATATYPE_AUINT32 : UINT32 UInt32Item[ArrayElementCount];
+                    case MTP_DATATYPE_AINT64  : INT64  Int64Item[ArrayElementCount];
+                    case MTP_DATATYPE_AUINT64 : UINT64 UInt64Item[ArrayElementCount];
+                    case MTP_DATATYPE_AINT128 : 
+                    case MTP_DATATYPE_AUINT128: MTPUINT128 UInt128Item[ArrayElementCount];
+
+                    default:
+                    struct MTPPropValueInvalidArrayDatatype =  FormatString("Invalid array datatype: 0x%x", MTPDataTypeParam)
+                    {
+                        ReportWPDError("Invalid MTP Array datatype: " + MTPDatatypeParam) InvalidMTPArrayDataType;
+                        Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+                    }        
+                }
+              }
+
+            default:
+              [Property.MTPPropValueStr = MTPPropValueInvalidDatatype.ToString]
+              struct MTPPropValueInvalidDatatype = FormatString("Invalid datatype: ox%x", MTPDataTypeParam)
+              {
+                ReportWPDError("Invalid MTP datatype " + MTPDataTypeParam) InvalidMTPDataType;
+                Blob( FrameLength - Offset ) RemainingUnparsedDataBlob;
+              }
+        }
+    }
+}
+
+struct MTPPropListItem = FormatString("Handle: %s  PropCode: %-41s Value:[%-9s] %s",Handle.ToString, PropCode.ToString, MTPDatatype.ToString, Property.MTPPropValueStr)
+{
+    MTPObjectHandle   Handle;
+    MTPObjectPropCode PropCode;
+    MTPDatatypeDT     MTPDataType;
+
+    [Property.MTPPropValueStr = ""]
+    switch
+    {
+        case (MTPDataType != MTP_DATATYPE_UNDEFINED):
+            [Property.MTPPropValueStr = PropertyValue.ToString]
+            MTPPropValue(MTPDataType) PropertyValue;
+        default:
+            [Property.MTPPropValueStr = "No Value available for datatype:Undefined"]_struct{}
+    }
+}
+
+struct MTPPropValueList(paramMTPOpcode) = FormatString("%u Elements", ElementCount)
+{
+    UINT32 ElementCount;
+
+    // While displaying the propvalue here, a little trick can be done to translate the propvalue
+    // based on the knowledge of PropCode
+    MTPPropListItem PropListItem[ElementCount] = (paramMTPOpcode == MTP_OPCODE_GETOBJECTPROPLIST)? 
+        FormatString("ObjectHandle: %s  PropCode: %-41s Value:[%-9s] %s",Handle.ToString, PropCode.ToString, MTPDatatype.ToString, Property.MTPPropValueStr):
+        FormatString("ServiceHandle: %s PropCode: %-41s Value:[%-9s] %s",Handle.ToString, PropCode.ToString, MTPDatatype.ToString, Property.MTPPropValueStr);
+}
+
+struct MTPObjectInfo = FormatString("Object Format: %s", ObjectFormat.ToString)
+{
+    MTPStorageID StorageID;
+    MTPFormatCode ObjectFormat;
+    UINT16 ProtectionStatus = FormatString("%s (0X%04X)", MTPProtectionStatusToStringTable(this), this);
+    UINT32 ObjectCompressedSize;
+    MTPFormatCode ThumbFormat;
+    UINT32 ThumbCompressedSize;
+    UINT32 ThumbPixWidth;
+    UINT32 ThumbPixHeight;
+    UINT32 ImagePixWidth;
+    UINT32 ImagePixHeight;
+    UINT32 ImagePixDepth;
+    MTPObjectHandle ParentObject;
+    UINT16 AssociationType = FormatString("%s (0X%04X)", MTPAssociationTypeToStringTable(this), this);
+    UINT32 AssociationDesc;
+    UINT32 SequenceNumber;
+    MTPStringWithLength FileName;
+    MTPStringWithLength DateCreated;
+    MTPStringWithLength DateModified;
+    MTPStringWithLength Keywords;
+}
+
+
+//========================================================
+// Tables
+//========================================================
+
+Table MTPOpcodeToStringTable
+{
+    switch(value)
+    {
+        case MTP_OPCODE_UNDEFINED                : "Undefined";
+        case MTP_OPCODE_GETDEVICEINFO            : "GetDeviceInfo";
+        case MTP_OPCODE_OPENSESSION              : "OpenSession";
+        case MTP_OPCODE_CLOSESESSION             : "CloseSession";
+        case MTP_OPCODE_GETSTORAGEIDS            : "GetStorageIDs";
+        case MTP_OPCODE_GETSTORAGEINFO           : "GetStorageInfo";
+        case MTP_OPCODE_GETNUMOBJECTS            : "GetNumObjects";
+        case MTP_OPCODE_GETOBJECTHANDLES         : "GetObjectHandles";
+        case MTP_OPCODE_GETOBJECTINFO            : "GetObjectInfo";
+        case MTP_OPCODE_GETOBJECT                : "GetObject";
+        case MTP_OPCODE_GETTHUMB                 : "GetThumb";
+        case MTP_OPCODE_DELETEOBJECT             : "DeleteObject";
+        case MTP_OPCODE_SENDOBJECTINFO           : "SendObjectInfo";
+        case MTP_OPCODE_SENDOBJECT               : "SendObject";
+        case MTP_OPCODE_INITIATECAPTURE          : "InitiateCapture";
+        case MTP_OPCODE_FORMATSTORE              : "FormatStore";
+        case MTP_OPCODE_RESETDEVICE              : "ResetDevice";
+        case MTP_OPCODE_SELFTEST                 : "SelfTest";
+        case MTP_OPCODE_SETOBJECTPROTECTION      : "SetObjectProtection";
+        case MTP_OPCODE_POWERDOWN                : "PowerDown";
+        case MTP_OPCODE_GETDEVICEPROPDESC        : "GetDevicePropDesc";
+        case MTP_OPCODE_GETDEVICEPROPVALUE       : "GetDevicePropValue";
+        case MTP_OPCODE_SETDEVICEPROPVALUE       : "SetDevicePropValue";
+        case MTP_OPCODE_RESETDEVICEPROPVALUE     : "ResetDevicePropValue";
+        case MTP_OPCODE_TERMINATECAPTURE         : "TerminateOpenCapture";
+        case MTP_OPCODE_MOVEOBJECT               : "MoveObject";
+        case MTP_OPCODE_COPYOBJECT               : "CopyObject";
+        case MTP_OPCODE_GETPARTIALOBJECT         : "GetPartialObject";
+        case MTP_OPCODE_INITIATEOPENCAPTURE      : "InitiateOpenCapture";
+        case MTP_OPCODE_GETOBJECTPROPSSUPPORTED  : "GetObjectPropsSupported";
+        case MTP_OPCODE_GETOBJECTPROPDESC        : "GetObjectPropDesc";
+        case MTP_OPCODE_GETOBJECTPROPVALUE       : "GetObjectPropValue";
+        case MTP_OPCODE_SETOBJECTPROPVALUE       : "SetObjectPropValue";
+        case MTP_OPCODE_GETOBJECTPROPLIST        : "GetObjectPropList";
+        case MTP_OPCODE_SETOBJECTPROPLIST        : "SetObjectPropList";
+        case MTP_OPCODE_GETINTERDEPENDENTPROPDESC: "GetInterDependentPropDesc";
+        case MTP_OPCODE_SENDOBJECTPROPLIST       : "SendObjectPropList";
+        case MTP_OPCODE_GETOBJECTREFERENCES      : "GetObjectReferences";
+        case MTP_OPCODE_SETOBJECTREFERENCES      : "SetObjectReferences";
+        case MTP_OPCODE_UPDATEDEVICEFIRMWARE     : "UpdateDeviceFirmWare";
+        case MTP_OPCODE_RESETOBJECTPROPVALUE     : "ResetObjectPropValue";
+        case MTP_OPCODE_GETSERVICEIDS            :
+        case MTP2_OPCODE_GETSERVICEIDS           : "GetServiceIDs";
+        case MTP_OPCODE_GETSERVICEINFO           :
+        case MTP2_OPCODE_GETSERVICEINFO          : "GetServiceInfo";
+        case MTP_OPCODE_GETSERVICECAPABILITIES   :
+        case MTP2_OPCODE_GETSERVICECAPABILITIES  : "GetServiceCapabilities";
+        case MTP_OPCODE_GETSERVICEPROPERTIES     :
+        case MTP2_OPCODE_GETSERVICEPROPERTIES    : "GetServiceProperties";
+        case MTP_OPCODE_GETSERVICEPROPERTYLIST   :
+        case MTP2_OPCODE_GETSERVICEPROPERTYLIST  : "GetServicePropList";
+        case MTP_OPCODE_SETSERVICEPROPERTYLIST   : 
+        case MTP2_OPCODE_SETSERVICEPROPERTYLIST  : "SetServicePropList";
+        case MTP_OPCODE_UPDATEOBJECTPROPLIST     :
+        case MTP2_OPCODE_UPDATEOBJECTPROPLIST    : "UpdateObjectPropList";
+        case MTP_OPCODE_DELETEOBJECTPROPLIST     : 
+        case MTP2_OPCODE_DELETEOBJECTPROPLIST    : "DeleteObjectPropList";
+        case MTP_OPCODE_DELETESERVICEPROPLIST    :
+        case MTP2_OPCODE_DELETESERVICEPROPLIST   : "DeleteServicePropList";
+        case MTP_OPCODE_GETFORMATCAPABILITIES    :
+        case MTP2_OPCODE_GETFORMATCAPABILITIES   : "GetFormatCapabilities";
+        case MTP_OPCODE_OPENOBJECTSTREAM         : "OpenObjectStream";
+        case MTP_OPCODE_READOBJECTSTREAM         : "ReadObjectStream";
+        case MTP_OPCODE_WRITEOBJECTSTREAM        : "WriteObjectStream";
+        case MTP_OPCODE_SEEKOBJECTSTREAM         : "SeekObjectStream";
+        case MTP_OPCODE_CLOSEOBJECTSTREAM        : "CloseObjectStream";
+        case MTP_OPCODE_CREATESESSION            : "CreateSession";
+        case MTP_OPCODE_RESTRICTSESSION          : "RestrictSession";
+        default     : _MTPOpcodeReservedTable(value);
+    }
+}
+
+Table _MTPOpcodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_OPCODE_RESERVED_FIRST) && (value<=MTP_OPCODE_RESERVED_LAST)): "Reserved";
+        case ((value>=MTP_OPCODE_VENDOREXTENSION_FIRST) && (value<=MTP_OPCODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+Table MTPResponseCodeToStringTable
+{
+    switch(value)
+    {
+        case 0x2000 : "Undefined";
+        case 0x2001 : "OK";
+        case 0x2002 : "General_Error";
+        case 0x2003 : "Session_Not_Open";
+        case 0x2004 : "Invalid_TransactionID";
+        case 0x2005 : "Operation_Not_Supported";
+        case 0x2006 : "Parameter_Not_Supported";
+        case 0x2007 : "Incomplete_Transfer";
+        case 0x2008 : "Invalid_StorageID";
+        case 0x2009 : "Invalid_ObjectHandle";
+        case 0x200A : "DeviceProp_Not_Supported";
+        case 0x200B : "Invalid_ObjectFormatCode";
+        case 0x200C : "Store_Full";
+        case 0x200D : "Object_WriteProtected";
+        case 0x200E : "Store_Read-Only";
+        case 0x200F : "Access_Denied";
+        case 0x2010 : "No_Thumbnail_Present";
+        case 0x2011 : "SelfTest_Failed";
+        case 0x2012 : "Partial_Deletion";
+        case 0x2013 : "Store_Not_Available";
+        case 0x2014 : "Specification_By_Format_Unsupported";
+        case 0x2015 : "No_Valid_ObjectInfo";
+        case 0x2016 : "Invalid_Code_Format";
+        case 0x2017 : "Unknown_Vendor_Code";
+        case 0x2018 : "Capture_Already_Terminated";
+        case 0x2019 : "Device_Busy";
+        case 0x201A : "Invalid_ParentObject";
+        case 0x201B : "Invalid_DeviceProp_Format";
+        case 0x201C : "Invalid_DeviceProp_Value";
+        case 0x201D : "Invalid_Parameter";
+        case 0x201E : "Session_Already_Open";
+        case 0x201F : "Transaction_Cancelled";
+        case 0x2020 : "Specification_of_Destination_Unsupported";
+        case 0x2021 : "Max_Streams_Reached";
+        case 0x2022 : "Max_Streams_Per_Object_Reached";
+        case 0x2023 : "Session_Limit_Reached";
+        case 0xA80B :
+        case 0xA301 : "Invalid_ServiceID";
+        case 0xA80C :
+        case 0xA302 : "Invalid_ServicePropCode";
+        case 0xA801 : "Invalid_ObjectPropCode";
+        case 0xA802 : "Invalid_ObjectProp_Format";
+        case 0xA803 : "Invalid_ObjectProp_Value";
+        case 0xA804 : "Invalid_ObjectReference";
+        case 0xA805 : "Invalid_ObjectGroupCode";
+        case 0xA806 : "Invalid_Dataset";
+        case 0xA807 : "Specification_By_Group_Unsupported";
+        case 0XA808 : "Specification_By_Depth_Unsupported";
+        case 0xA809 : "Object_Too_Large";
+        case 0xA80A : "ObjectProp_Not_Supported";
+        case MTP_RESPONSECODE_MAXSTREAMSREACHED                     : "Max_Streams_Reached";
+        case MTP_RESPONSECODE_MAXSTREAMSPEROBJECTREACHED            : "Max_Streams_Per_Object_Reached";
+        default     : _MTPResponsecodeReservedTable(value); 
+    }
+}
+Table _MTPResponsecodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_RESPONSECODE_RESERVED_FIRST)        && (value<=MTP_RESPONSECODE_RESERVED_LAST)): "Reserved";
+        case ((value>=MTP_RESPONSECODE_VENDOREXTENSION_FIRST) && (value<=MTP_RESPONSECODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+Table MTPEventCodeToStringTable
+{
+    switch(value)
+    {
+        case MTP_EVENTCODE_UNDEFINED              : "UNDEFINED";
+        case MTP_EVENTCODE_CANCELTRANSACTION      : "CANCELTRANSACTION";
+        case MTP_EVENTCODE_OBJECTADDED            : "OBJECTADDED";
+        case MTP_EVENTCODE_OBJECTREMOVED          : "OBJECTREMOVED";
+        case MTP_EVENTCODE_STOREADDED             : "STOREADDED";
+        case MTP_EVENTCODE_STOREREMOVED           : "STOREREMOVED";
+        case MTP_EVENTCODE_DEVICEPROPCHANGED      : "DEVICEPROPCHANGED";
+        case MTP_EVENTCODE_OBJECTINFOCHANGED      : "OBJECTINFOCHANGED";
+        case MTP_EVENTCODE_DEVICEINFOCHANGED      : "DEVICEINFOCHANGED";
+        case MTP_EVENTCODE_REQUESTOBJECTTRANSFER  : "REQUESTOBJECTTRANSFER";
+        case MTP_EVENTCODE_STOREFULL              : "STOREFULL";
+        case MTP_EVENTCODE_DEVICERESET            : "DEVICERESET";
+        case MTP_EVENTCODE_STORAGEINFOCHANGED     : "STORAGEINFOCHANGED";
+        case MTP_EVENTCODE_CAPTURECOMPLETE        : "CAPTURECOMPLETE";
+        case MTP_EVENTCODE_UNREPORTEDSTATUS       : "UNREPORTEDSTATUS";    
+        case MTP_EVENTCODE_SERVICEADDED           :
+        case MTP2_EVENTCODE_SERVICEADDED          : "SERVICEADDED";
+        case MTP_EVENTCODE_SERVICEREMOVED         :
+        case MTP2_EVENTCODE_SERVICEREMOVED        : "SERVICEREMOVED";
+        case MTP_EVENTCODE_SERVICEPROPCHANGED     : 
+        case MTP2_EVENTCODE_SERVICEPROPCHANGED    : "SERVICEPROPCHANGED";
+        case MTP_EVENTCODE_METHODCOMPLETE         :
+        case MTP2_EVENTCODE_METHODCOMPLETE        : "METHODCOMPLETE";
+        case MTP_EVENTCODE_OBJECTPROPCHANGED      : "OBJECTPROPCHANGED";
+        case MTP_EVENTCODE_OBJECTPROPDESCCHANGED  : "OBJECTPROPDESCCHANGED";
+        case MTP_EVENTCODE_OBJECTREFERENCESCHANGED: "OBJECTREFERENCESCHANGED";
+        
+        default: _MTPEventcodeReservedTable(value);
+    }
+}
+Table _MTPEventcodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_EVENTCODE_RESERVED_FIRST) && (value<=MTP_EVENTCODE_RESERVED_LAST)): "Reserved";
+        case ((value>=MTP_EVENTCODE_VENDOREXTENSION_FIRST) && (value<=MTP_EVENTCODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+Table MTPDatatypeToStringTable
+{
+    switch(value)
+    {
+        case MTP_DATATYPE_UNDEFINED : "Undefined";
+        case MTP_DATATYPE_INT8      : "Int8";
+        case MTP_DATATYPE_UINT8     : "UInt8";
+        case MTP_DATATYPE_INT16     : "Int16";
+        case MTP_DATATYPE_UINT16    : "UInt16";
+        case MTP_DATATYPE_INT32     : "Int32";
+        case MTP_DATATYPE_UINT32    : "UInt32";
+        case MTP_DATATYPE_INT64     : "Int64";
+        case MTP_DATATYPE_UINT64    : "UInt64";
+        case MTP_DATATYPE_INT128    : "Int128";
+        case MTP_DATATYPE_UINT128   : "UInt128";
+        case MTP_DATATYPE_AINT8     : "AInt8";
+        case MTP_DATATYPE_AUINT8    : "AUInt8";
+        case MTP_DATATYPE_AINT16    : "AInt16";
+        case MTP_DATATYPE_AUINT16   : "AUInt16";
+        case MTP_DATATYPE_AINT32    : "AInt32";
+        case MTP_DATATYPE_AUINT32   : "AUInt32";
+        case MTP_DATATYPE_AINT64    : "AInt64";
+        case MTP_DATATYPE_AUINT64   : "AUInt64";
+        case MTP_DATATYPE_AINT128   : "AInt128";
+        case MTP_DATATYPE_AUINT128  : "AUInt128";
+        case MTP_DATATYPE_STRING    : "String";
+        default                     : FormatString("Unknown datatype: %u", value);
+    }
+}
+
+Table MTPFormatCodeToStringTable
+{
+    switch(value)
+    {
+        case MTP_FORMATCODE_NOTUSED                      : "NOTUSED";
+        case MTP_FORMATCODE_ALLIMAGES                    : "ALLIMAGES";
+        case MTP_FORMATCODE_UNDEFINED                    : "UNDEFINED";
+        case MTP_FORMATCODE_ASSOCIATION                  : "ASSOCIATION";
+        case MTP_FORMATCODE_SCRIPT                       : "SCRIPT";
+        case MTP_FORMATCODE_EXECUTABLE                   : "EXECUTABLE";
+        case MTP_FORMATCODE_TEXT                         : "TEXT";
+        case MTP_FORMATCODE_HTML                         : "HTML";
+        case MTP_FORMATCODE_DPOF                         : "DPOF";
+        case MTP_FORMATCODE_AIFF                         : "AIFF";
+        case MTP_FORMATCODE_WAVE                         : "WAVE";
+        case MTP_FORMATCODE_MP3                          : "MP3";
+        case MTP_FORMATCODE_AVI                          : "AVI";
+        case MTP_FORMATCODE_MPEG                         : "MPEG";
+        case MTP_FORMATCODE_ASF                          : "ASF";
+        
+        case MTP_FORMATCODE_IMAGE_UNDEFINED              : "UNDEFINEDIMAGE";
+        case MTP_FORMATCODE_IMAGE_EXIF                   : "EXIF/JPEG";
+        case MTP_FORMATCODE_IMAGE_TIFFEP                 : "TIFF/EP";
+        case MTP_FORMATCODE_IMAGE_FLASHPIX               : "FLASHPIX";
+        case MTP_FORMATCODE_IMAGE_BMP                    : "BMP";
+        case MTP_FORMATCODE_IMAGE_CIFF                   : "CIFF";
+        case MTP_FORMATCODE_IMAGE_GIF                    : "GIF";
+        case MTP_FORMATCODE_IMAGE_JFIF                   : "JFIF";
+        case MTP_FORMATCODE_IMAGE_PCD                    : "PCD";
+        case MTP_FORMATCODE_IMAGE_PICT                   : "PICT";
+        case MTP_FORMATCODE_IMAGE_PNG                    : "PNG";
+        case MTP_FORMATCODE_IMAGE_TIFF                   : "TIFF";
+        case MTP_FORMATCODE_IMAGE_TIFFIT                 : "TIFF/IT";
+        case MTP_FORMATCODE_IMAGE_JP2                    : "JP2";
+        case MTP_FORMATCODE_IMAGE_JPX                    : "JPX";
+        
+        case MTP_FORMATCODE_UNDEFINEDFIRMWARE            : "UNDEFINEDFIRMWARE";
+        case MTP_FORMATCODE_WBMP                         : "WBMP";
+        case MTP_FORMATCODE_JPEGXR                       : "JPEGXR";
+
+        case MTP_FORMATCODE_WINDOWSIMAGEFORMAT           : "WINDOWSIMAGEFORMAT";
+        case MTP_FORMATCODE_UNDEFINEDAUDIO               : "UNDEFINEDAUDIO";
+        case MTP_FORMATCODE_WMA                          : "WMA";
+        case MTP_FORMATCODE_OGG                          : "OGG";
+        case MTP_FORMATCODE_AAC                          : "AAC";
+        case MTP_FORMATCODE_AUDIBLE                      : "AUDIBLE";
+        case MTP_FORMATCODE_FLAC                         : "FLAC";
+        case MTP_FORMATCODE_QCELP                        : "QCELP";
+        case MTP_FORMATCODE_AMR                          : "AMR";
+
+        case MTP_FORMATCODE_UNDEFINEDVIDEO               : "UNDEFINEDVIDEO";
+        case MTP_FORMATCODE_WMV                          : "WMV";
+        case MTP_FORMATCODE_MP4                          : "MP4";
+        case MTP_FORMATCODE_MP2                          : "MP2";
+        case MTP_FORMATCODE_3GP                          : "3GP";
+        case MTP_FORMATCODE_3G2                          : "3G2";
+        case MTP_FORMATCODE_AVCHD                        : "AVCHD";
+        case MTP_FORMATCODE_ATSCTS                       : "ATSCTS";
+        case MTP_FORMATCODE_DVBTS                        : "DVBTS";
+
+        case MTP_FORMATCODE_UNDEFINEDCOLLECTION          : "UNDEFINEDCOLLECTION";
+        case MTP_FORMATCODE_ABSTRACTMULTIMEDIAALBUM      : "ABSTRACTMULTIMEDIAALBUM";
+        case MTP_FORMATCODE_ABSTRACTIMAGEALBUM           : "ABSTRACTIMAGEALBUM";
+        case MTP_FORMATCODE_ABSTRACTAUDIOALBUM           : "ABSTRACTAUDIOALBUM";
+        case MTP_FORMATCODE_ABSTRACTVIDEOALBUM           : "ABSTRACTVIDEOALBUM";
+        case MTP_FORMATCODE_ABSTRACTAUDIOVIDEOPLAYLIST   : "ABSTRACTAUDIOVIDEOPLAYLIST";
+        case MTP_FORMATCODE_ABSTRACTCONTACTGROUP         : "ABSTRACTCONTACTGROUP";
+        case MTP_FORMATCODE_ABSTRACTMESSAGEFOLDER        : "ABSTRACTMESSAGEFOLDER";
+        case MTP_FORMATCODE_ABSTRACTCHAPTEREDPRODUCTION  : "ABSTRACTCHAPTEREDPRODUCTION";
+        case MTP_FORMATCODE_ABSTRACTMEDIACAST         : "ABSTRACTMEDIACAST";
+        case MTP_FORMATCODE_WPLPLAYLIST                  : "WPLPLAYLIST";
+        case MTP_FORMATCODE_M3UPLAYLIST                  : "M3UPLAYLIST";
+        case MTP_FORMATCODE_MPLPLAYLIST                  : "MPLPLAYLIST";
+        case MTP_FORMATCODE_ASXPLAYLIST                  : "ASXPLAYLIST";
+        case MTP_FORMATCODE_PLSPLAYLIST                  : "PLSPLAYLIST";
+        case MTP_FORMATCODE_UNDEFINEDDOCUMENT            : "UNDEFINEDDOCUMENT";
+        case MTP_FORMATCODE_ABSTRACTDOCUMENT             : "ABSTRACTDOCUMENT";
+        case MTP_FORMATCODE_XMLDOCUMENT                  : "XMLDOCUMENT";
+        case MTP_FORMATCODE_MICROSOFTWORDDOCUMENT        : "MICROSOFTWORDDOCUMENT";
+        case MTP_FORMATCODE_MHTCOMPILEDHTMLDOCUMENT      : "MHTCOMPILEDHTMLDOCUMENT";
+        case MTP_FORMATCODE_MICROSOFTEXCELSPREADSHEET    : "MICROSOFTEXCELSPREADSHEET";
+        case MTP_FORMATCODE_MICROSOFTPOWERPOINTDOCUMENT  : "MICROSOFTPOWERPOINTDOCUMENT";
+        case MTP_FORMATCODE_UNDEFINEDMESSAGE             : "UNDEFINEDMESSAGE";
+        case MTP_FORMATCODE_ABSTRACTMESSAGE              : "ABSTRACTMESSAGE";
+        case MTP_FORMATCODE_UNDEFINEDCONTACT             : "UNDEFINEDCONTACT";
+        case MTP_FORMATCODE_ABSTRACTCONTACT              : "ABSTRACTCONTACT";
+        case MTP_FORMATCODE_VCARD2                       : "VCARD2";
+        case MTP_FORMATCODE_VCARD3                       : "VCARD3";
+        case MTP_FORMATCODE_UNDEFINEDCALENDARITEM        : "UNDEFINEDCALENDARITEM";
+        case MTP_FORMATCODE_ABSTRACTCALENDARITEM         : "ABSTRACTCALENDARITEM";
+        case MTP_FORMATCODE_VCALENDAR1                   : "VCALENDAR1";
+        case MTP_FORMATCODE_VCALENDAR2                   : "VCALENDAR2";
+        case MTP_FORMATCODE_UNDEFINEDWINDOWSEXECUTABLE   : "UNDEFINEDWINDOWSEXECUTABLE";
+
+        default: _MTPFormatcodeReservedTable(value);
+    }
+}
+Table _MTPFormatcodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_FORMATCODE_RESERVED_FIRST)       && (value<=MTP_FORMATCODE_RESERVED_LAST)): "Reserved";
+        case ((value>=MTP_FORMATCODE_IMAGE_RESERVED_FIRST) && (value<=MTP_FORMATCODE_IMAGE_RESERVED_LAST)): "ReservedImageFormat";
+        case ((value>=MTP_FORMATCODE_VENDOREXTENSION_FIRST)&& (value<=MTP_FORMATCODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+Table MTPDevicePropCodeToStringTable
+{
+    switch(value)
+    {
+        case MTP_DEVICEPROPCODE_NOTUSED                       : "NOTUSED";
+        case MTP_DEVICEPROPCODE_ALL                           : "ALL";
+        case MTP_DEVICEPROPCODE_UNDEFINED                     : "UNDEFINED";
+        case MTP_DEVICEPROPCODE_BATTERYLEVEL                  : "BATTERYLEVEL";
+        case MTP_DEVICEPROPCODE_FUNCTIONMODE                  : "FUNCTIONMODE";
+        case MTP_DEVICEPROPCODE_IMAGESIZE                     : "IMAGESIZE";
+        case MTP_DEVICEPROPCODE_COMPRESSIONSETTING            : "COMPRESSIONSETTING";
+        case MTP_DEVICEPROPCODE_WHITEBALANCE                  : "WHITEBALANCE";
+        case MTP_DEVICEPROPCODE_RGBGAIN                       : "RGBGAIN";
+        case MTP_DEVICEPROPCODE_FNUMBER                       : "FNUMBER";
+        case MTP_DEVICEPROPCODE_FOCALLENGTH                   : "FOCALLENGTH";
+        case MTP_DEVICEPROPCODE_FOCUSDISTANCE                 : "FOCUSDISTANCE";
+        case MTP_DEVICEPROPCODE_FOCUSMODE                     : "FOCUSMODE";
+        case MTP_DEVICEPROPCODE_EXPOSUREMETERINGMODE          : "EXPOSUREMETERINGMODE";
+        case MTP_DEVICEPROPCODE_FLASHMODE                     : "FLASHMODE";
+        case MTP_DEVICEPROPCODE_EXPOSURETIME                  : "EXPOSURETIME";
+        case MTP_DEVICEPROPCODE_EXPOSUREPROGRAMMODE           : "EXPOSUREPROGRAMMODE";
+        case MTP_DEVICEPROPCODE_EXPOSUREINDEX                 : "EXPOSUREINDEX";
+        case MTP_DEVICEPROPCODE_EXPOSURECOMPENSATION          : "EXPOSURECOMPENSATION";
+        case MTP_DEVICEPROPCODE_DATETIME                      : "DATETIME";
+        case MTP_DEVICEPROPCODE_CAPTUREDELAY                  : "CAPTUREDELAY";
+        case MTP_DEVICEPROPCODE_STILLCAPTUREMODE              : "STILLCAPTUREMODE";
+        case MTP_DEVICEPROPCODE_CONTRAST                      : "CONTRAST";
+        case MTP_DEVICEPROPCODE_SHARPNESS                     : "SHARPNESS";
+        case MTP_DEVICEPROPCODE_DIGITALZOOM                   : "DIGITALZOOM";
+        case MTP_DEVICEPROPCODE_EFFECTMODE                    : "EFFECTMODE";
+        case MTP_DEVICEPROPCODE_BURSTNUMBER                   : "BURSTNUMBER";
+        case MTP_DEVICEPROPCODE_BURSTINTERVAL                 : "BURSTINTERVAL";
+        case MTP_DEVICEPROPCODE_TIMELAPSENUMBER               : "TIMELAPSENUMBER";
+        case MTP_DEVICEPROPCODE_TIMELAPSEINTERVAL             : "TIMELAPSEINTERVAL";
+        case MTP_DEVICEPROPCODE_FOCUSMETERINGMODE             : "FOCUSMETERINGMODE";
+        case MTP_DEVICEPROPCODE_UPLOADURL                     : "UPLOADURL";
+        case MTP_DEVICEPROPCODE_ARTIST                        : "ARTIST";
+        case MTP_DEVICEPROPCODE_COPYRIGHTINFO                 : "COPYRIGHTINFO";
+        
+        case MTP_DEVICEPROPCODE_FUNCTIONALID                  :
+        case MTP2_DEVICEPROPCODE_FUNCTIONALID                 : "FUNCTIONALID";
+        case MTP_DEVICEPROPCODE_MODELUNIQUEID                 : "MODELUNIQUEID";
+        case MTP_DEVICEPROPCODE_USEDEVICESTAGE                : "USEDEVICESTAGE";
+        
+        case MTP_DEVICEPROPCODE_SYNCHRONIZATIONPARTNER        : "SYNCHRONIZATIONPARTNER";
+        case MTP_DEVICEPROPCODE_DEVICEFRIENDLYNAME            : "DEVICEFRIENDLYNAME";
+        case MTP_DEVICEPROPCODE_VOLUME                        : "VOLUME";
+        case MTP_DEVICEPROPCODE_CONSUMPTIONFORMATPREFERENCES  : "CONSUMPTIONFORMATPREFERENCES";
+        case MTP_DEVICEPROPCODE_DEVICEICON                    : "DEVICEICON";
+        case MTP_DEVICEPROPCODE_SESSIONINITIATORVERSIONINFO   : "SESSIONINITIATORVERSIONINFO";
+        case MTP_DEVICEPROPCODE_PERCEIVEDDEVICETYPE           : "PERCEIVEDDEVICETYPE";
+        case MTP_DEVICEPROPCODE_PLAYBACKRATE                  : "PLAYBACKRATE";
+        case MTP_DEVICEPROPCODE_PLAYBACKOBJECT                : "PLAYBACKOBJECT";
+        case MTP_DEVICEPROPCODE_PLAYBACKCONTAINER             : "PLAYBACKCONTAINER";
+        case MTP_DEVICEPROPCODE_PLAYBACKPOSITION              : "PLAYBACKPOSITION";
+                
+        default: _MTPDevicePropcodeReservedTable(value);
+    }
+}
+
+Table _MTPDevicePropcodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_DEVICEPROPCODE_RESERVED_FIRST)       && (value<=MTP_DEVICEPROPCODE_RESERVED_LAST)): "Reserved";
+        case ((value>=MTP_DEVICEPROPCODE_VENDOREXTENSION_FIRST)&& (value<=MTP_DEVICEPROPCODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+Table MTPObjectPropCodeToStringTable
+{
+    switch(value)
+    {
+        case MTP_OBJECTPROPCODE_NOTUSED                       : "NOTUSED";
+        case MTP_OBJECTPROPCODE_ALL                           : "ALL";
+        case MTP_OBJECTPROPCODE_UNDEFINED                     : "UNDEFINED";
+        case MTP_OBJECTPROPCODE_STORAGEID                     : "STORAGEID";
+        case MTP_OBJECTPROPCODE_OBJECTFORMAT                  : "OBJECTFORMAT";
+        case MTP_OBJECTPROPCODE_PROTECTIONSTATUS              : "PROTECTIONSTATUS";
+        case MTP_OBJECTPROPCODE_OBJECTSIZE                    : "OBJECTSIZE";
+        case MTP_OBJECTPROPCODE_ASSOCIATIONTYPE               : "ASSOCIATIONTYPE";
+        case MTP_OBJECTPROPCODE_ASSOCIATIONDESC               : "ASSOCIATIONDESC";
+        case MTP_OBJECTPROPCODE_OBJECTFILENAME                : "OBJECTFILENAME";
+        case MTP_OBJECTPROPCODE_DATECREATED                   : "DATECREATED";
+        case MTP_OBJECTPROPCODE_DATEMODIFIED                  : "DATEMODIFIED";
+        case MTP_OBJECTPROPCODE_KEYWORDS                      : "KEYWORDS";
+        case MTP_OBJECTPROPCODE_PARENT                        : "PARENT";
+        case MTP_OBJECTPROPCODE_ALLOWEDFOLDERCONTENTS         : "ALLOWEDFOLDERCONTENTS";
+        case MTP_OBJECTPROPCODE_HIDDEN                        : "HIDDEN";
+        case MTP_OBJECTPROPCODE_SYSTEMOBJECT                  : "SYSTEMOBJECT";
+        case MTP_OBJECTPROPCODE_PERSISTENTUNIQUEOBJECTIDENTIFIER : "PERSISTENTUNIQUEOBJECTIDENTIFIER";
+        case MTP_OBJECTPROPCODE_SYNCID                        : "SYNCID";
+        case MTP_OBJECTPROPCODE_PROPERTYBAG                   : "PROPERTYBAG";
+        case MTP_OBJECTPROPCODE_NAME                          : "NAME";
+        case MTP_OBJECTPROPCODE_CREATEDBY                     : "CREATEDBY";
+        case MTP_OBJECTPROPCODE_ARTIST                        : "ARTIST";
+        case MTP_OBJECTPROPCODE_DATEAUTHORED                  : "DATEAUTHORED";
+        case MTP_OBJECTPROPCODE_DESCRIPTION                   : "DESCRIPTION";
+        case MTP_OBJECTPROPCODE_URLREFERENCE                  : "URLREFERENCE";
+        case MTP_OBJECTPROPCODE_LANGUAGELOCALE                : "LANGUAGELOCALE";
+        case MTP_OBJECTPROPCODE_COPYRIGHTINFORMATION          : "COPYRIGHTINFORMATION";
+        case MTP_OBJECTPROPCODE_SOURCE                        : "SOURCE";
+        case MTP_OBJECTPROPCODE_ORIGINLOCATION                : "ORIGINLOCATION";
+        case MTP_OBJECTPROPCODE_DATEADDED                     : "DATEADDED";
+        case MTP_OBJECTPROPCODE_NONCONSUMABLE                 : "NONCONSUMABLE";
+        case MTP_OBJECTPROPCODE_CORRUPTUNPLAYABLE             : "CORRUPTUNPLAYABLE";
+        case MTP_OBJECTPROPCODE_PRODUCERSERIALNUMBER          : "PRODUCERSERIALNUMBER";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEFORMAT    : "REPRESENTATIVESAMPLEFORMAT";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLESIZE      : "REPRESENTATIVESAMPLESIZE";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEHEIGHT    : "REPRESENTATIVESAMPLEHEIGHT";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEWIDTH     : "REPRESENTATIVESAMPLEWIDTH";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEDURATION  : "REPRESENTATIVESAMPLEDURATION";
+        case MTP_OBJECTPROPCODE_REPRESENTATIVESAMPLEDATA      : "REPRESENTATIVESAMPLEDATA";
+        case MTP_OBJECTPROPCODE_WIDTH                         : "WIDTH";
+        case MTP_OBJECTPROPCODE_HEIGHT                        : "HEIGHT";
+        case MTP_OBJECTPROPCODE_DURATION                      : "DURATION";
+        case MTP_OBJECTPROPCODE_USERRATING                    : "USERRATING";
+        case MTP_OBJECTPROPCODE_TRACK                         : "TRACK";
+        case MTP_OBJECTPROPCODE_GENRE                         : "GENRE";
+        case MTP_OBJECTPROPCODE_CREDITS                       : "CREDITS";
+        case MTP_OBJECTPROPCODE_LYRICS                        : "LYRICS";
+        case MTP_OBJECTPROPCODE_SUBSCRIPTIONCONTENTID         : "SUBSCRIPTIONCONTENTID";
+        case MTP_OBJECTPROPCODE_PRODUCEDBY                    : "PRODUCEDBY";
+        case MTP_OBJECTPROPCODE_USECOUNT                      : "USECOUNT";
+        case MTP_OBJECTPROPCODE_SKIPCOUNT                     : "SKIPCOUNT";
+        case MTP_OBJECTPROPCODE_LASTACCESSED                  : "LASTACCESSED";
+        case MTP_OBJECTPROPCODE_PARENTALRATING                : "PARENTALRATING";
+        case MTP_OBJECTPROPCODE_METAGENRE                     : "METAGENRE";
+        case MTP_OBJECTPROPCODE_COMPOSER                      : "COMPOSER";
+        case MTP_OBJECTPROPCODE_EFFECTIVERATING               : "EFFECTIVERATING";
+        case MTP_OBJECTPROPCODE_SUBTITLE                      : "SUBTITLE";
+        case MTP_OBJECTPROPCODE_ORIGINALRELEASEDATE           : "ORIGINALRELEASEDATE";
+        case MTP_OBJECTPROPCODE_ALBUMNAME                     : "ALBUMNAME";
+        case MTP_OBJECTPROPCODE_ALBUMARTIST                   : "ALBUMARTIST";
+        case MTP_OBJECTPROPCODE_MOOD                          : "MOOD";
+        case MTP_OBJECTPROPCODE_DRMPROTECTION                 : "DRMPROTECTION";
+        case MTP_OBJECTPROPCODE_SUBDESCRIPTION                : "SUBDESCRIPTION";
+        case MTP_OBJECTPROPCODE_ISCROPPED                     : "ISCROPPED";
+        case MTP_OBJECTPROPCODE_ISCOLOURCORRECTED             : "ISCOLOURCORRECTED";
+        case MTP_OBJECTPROPCODE_IMAGEBITDEPTH                 : "IMAGEBITDEPTH";
+        case MTP_OBJECTPROPCODE_FNUMBER                       : "FNUMBER";
+        case MTP_OBJECTPROPCODE_EXPOSURETIME                  : "EXPOSURETIME";
+        case MTP_OBJECTPROPCODE_EXPOSUREINDEX                 : "EXPOSUREINDEX";
+        case MTP_OBJECTPROPCODE_TOTALBITRATE                  : "TOTALBITRATE";
+        case MTP_OBJECTPROPCODE_BITRATETYPE                   : "BITRATETYPE";
+        case MTP_OBJECTPROPCODE_SAMPLERATE                    : "SAMPLERATE";
+        case MTP_OBJECTPROPCODE_NUMBEROFCHANNELS              : "NUMBEROFCHANNELS";
+        case MTP_OBJECTPROPCODE_AUDIOBITDEPTH                 : "AUDIOBITDEPTH";
+        case MTP_OBJECTPROPCODE_BLOCKALIGNMENT                : "BLOCKALIGNMENT";
+        case MTP_OBJECTPROPCODE_SCANTYPE                      : "SCANTYPE";
+        case MTP_OBJECTPROPCODE_COLOURRANGE                   : "COLOURRANGE";
+        case MTP_OBJECTPROPCODE_AUDIOWAVECODEC                : "AUDIOWAVECODEC";
+        case MTP_OBJECTPROPCODE_AUDIOBITRATE                  : "AUDIOBITRATE";
+        case MTP_OBJECTPROPCODE_VIDEOFOURCCCODEC              : "VIDEOFOURCCCODEC";
+        case MTP_OBJECTPROPCODE_VIDEOBITRATE                  : "VIDEOBITRATE";
+        case MTP_OBJECTPROPCODE_FRAMESPERMILLISECOND          : "FRAMESPERMILLISECOND";
+        case MTP_OBJECTPROPCODE_KEYFRAMEDISTANCE              : "KEYFRAMEDISTANCE";
+        case MTP_OBJECTPROPCODE_BUFFERSIZE                    : "BUFFERSIZE";
+        case MTP_OBJECTPROPCODE_ENCODINGQUALITY               : "ENCODINGQUALITY";
+        case MTP_OBJECTPROPCODE_ENCODINGPROFILE               : "ENCODINGPROFILE";
+        case MTP_OBJECTPROPCODE_AUDIOENCODINGPROFILE          : "AUDIOENCODINGPROFILE";
+
+        case MTP_OBJECTPROPCODE_DISPLAYNAME                   : "DISPLAYNAME";
+        case MTP_OBJECTPROPCODE_BODYTEXT                      : "BODYTEXT";
+        case MTP_OBJECTPROPCODE_SUBJECT                       : "SUBJECT";
+        case MTP_OBJECTPROPCODE_PRIORITY                      : "PRIORITY";
+        case MTP_OBJECTPROPCODE_GIVENNAME                     : "GIVENNAME";
+        case MTP_OBJECTPROPCODE_MIDDLENAMES                   : "MIDDLENAMES";
+        case MTP_OBJECTPROPCODE_FAMILYNAME                    : "FAMILYNAME";
+        case MTP_OBJECTPROPCODE_PREFIX                        : "PREFIX";
+        case MTP_OBJECTPROPCODE_SUFFIX                        : "SUFFIX";
+        case MTP_OBJECTPROPCODE_PHONETICGIVENNAME             : "PHONETICGIVENNAME";
+        case MTP_OBJECTPROPCODE_PHONETICFAMILYNAME            : "PHONETICFAMILYNAME";
+        case MTP_OBJECTPROPCODE_EMAILPRIMARY                  : "EMAILPRIMARY";
+        case MTP_OBJECTPROPCODE_EMAILPERSONAL1                : "EMAILPERSONAL1";
+        case MTP_OBJECTPROPCODE_EMAILPERSONAL2                : "EMAILPERSONAL2";
+        case MTP_OBJECTPROPCODE_EMAILBUSINESS1                : "EMAILBUSINESS1";
+        case MTP_OBJECTPROPCODE_EMAILBUSINESS2                : "EMAILBUSINESS2";
+        case MTP_OBJECTPROPCODE_EMAILOTHERS                   : "EMAILOTHERS";
+        case MTP_OBJECTPROPCODE_PHONENUMBERPRIMARY            : "PHONENUMBERPRIMARY";
+        case MTP_OBJECTPROPCODE_PHONENUMBERPERSONAL           : "PHONENUMBERPERSONAL";
+        case MTP_OBJECTPROPCODE_PHONENUMBERPERSONAL2          : "PHONENUMBERPERSONAL2";
+        case MTP_OBJECTPROPCODE_PHONENUMBERBUSINESS           : "PHONENUMBERBUSINESS";
+        case MTP_OBJECTPROPCODE_PHONENUMBERBUSINESS2          : "PHONENUMBERBUSINESS2";
+        case MTP_OBJECTPROPCODE_PHONENUMBERMOBIL              : "PHONENUMBERMOBIL";
+        case MTP_OBJECTPROPCODE_PHONENUMBERMOBIL2             : "PHONENUMBERMOBIL2";
+        case MTP_OBJECTPROPCODE_FAXNUMBERPRIMARY              : "FAXNUMBERPRIMARY";
+        case MTP_OBJECTPROPCODE_FAXNUMBERPERSONAL             : "FAXNUMBERPERSONAL";
+        case MTP_OBJECTPROPCODE_FAXNUMBERBUSINESS             : "FAXNUMBERBUSINESS";
+        case MTP_OBJECTPROPCODE_PAGERNUMBER                   : "PAGERNUMBER";
+        case MTP_OBJECTPROPCODE_PHONENUMBEROTHERS             : "PHONENUMBEROTHERS";
+        case MTP_OBJECTPROPCODE_PRIMARYWEBADDRESS             : "PRIMARYWEBADDRESS";
+        case MTP_OBJECTPROPCODE_PERSONALWEBADDRESS            : "PERSONALWEBADDRESS";
+        case MTP_OBJECTPROPCODE_BUSINESSWEBADDRESS            : "BUSINESSWEBADDRESS";
+        case MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS      : "INSTANCEMESSENGERADDRESS";
+        case MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS2     : "INSTANCEMESSENGERADDRESS2";
+        case MTP_OBJECTPROPCODE_INSTANCEMESSENGERADDRESS3     : "INSTANCEMESSENGERADDRESS3";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALFULL     : "POSTALADDRESSPERSONALFULL";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALLINE1    : "POSTALADDRESSPERSONALLINE1";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALLINE2    : "POSTALADDRESSPERSONALLINE2";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALCITY     : "POSTALADDRESSPERSONALCITY";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALREGION   : "POSTALADDRESSPERSONALREGION";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALPOSTALCODE : "POSTALADDRESSPERSONALPOSTALCODE";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSPERSONALCOUNTRY  : "POSTALADDRESSPERSONALCOUNTRY";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSFULL     : "POSTALADDRESSBUSINESSFULL";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSLINE1    : "POSTALADDRESSBUSINESSLINE1";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSLINE2    : "POSTALADDRESSBUSINESSLINE2";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSCITY     : "POSTALADDRESSBUSINESSCITY";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSREGION   : "POSTALADDRESSBUSINESSREGION";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSPOSTALCODE : "POSTALADDRESSBUSINESSPOSTALCODE";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSBUSINESSCOUNTRY  : "POSTALADDRESSBUSINESSCOUNTRY";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERFULL        : "POSTALADDRESSOTHERFULL";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERLINE1       : "POSTALADDRESSOTHERLINE1";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERLINE2       : "POSTALADDRESSOTHERLINE2";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERCITY        : "POSTALADDRESSOTHERCITY";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERREGION      : "POSTALADDRESSOTHERREGION";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERPOSTALCODE  : "POSTALADDRESSOTHERPOSTALCODE";
+        case MTP_OBJECTPROPCODE_POSTALADDRESSOTHERCOUNTRY     : "POSTALADDRESSOTHERCOUNTRY";
+        case MTP_OBJECTPROPCODE_ORGANIZATIONNAME              : "ORGANIZATIONNAME";
+        case MTP_OBJECTPROPCODE_PHONETICORGANIZATIONNAME      : "PHONETICORGANIZATIONNAME";
+        case MTP_OBJECTPROPCODE_ROLE                          : "ROLE";
+        case MTP_OBJECTPROPCODE_BIRTHDAY                      : "BIRTHDAY";
+        case MTP_OBJECTPROPCODE_MESSAGETO                     : "MESSAGETO";
+        case MTP_OBJECTPROPCODE_MESSAGECC                     : "MESSAGECC";
+        case MTP_OBJECTPROPCODE_MESSAGEBCC                    : "MESSAGEBCC";
+        case MTP_OBJECTPROPCODE_MESSAGEREAD                   : "MESSAGEREAD";
+        case MTP_OBJECTPROPCODE_MESSAGERECEIVETIME            : "MESSAGERECEIVETIME";
+        case MTP_OBJECTPROPCODE_MESSAGESENDER                 : "MESSAGESENDER";
+        case MTP_OBJECTPROPCODE_ACTIVITYBEGINTIME             : "ACTIVITYBEGINTIME";
+        case MTP_OBJECTPROPCODE_ACTIVITYENDTIME               : "ACTIVITYENDTIME";
+        case MTP_OBJECTPROPCODE_ACTIVITYLOCATION              : "ACTIVITYLOCATION";
+        case MTP_OBJECTPROPCODE_ACTIVITYREQUIREDATTENDEES     : "ACTIVITYREQUIREDATTENDEES";
+        case MTP_OBJECTPROPCODE_ACTIVITYOPTIONALATTENDEES     : "ACTIVITYOPTIONALATTENDEES";
+        case MTP_OBJECTPROPCODE_ACTIVITYRESOURCES             : "ACTIVITYRESOURCES";
+        case MTP_OBJECTPROPCODE_ACTIVITYACCEPTEDED            : "ACTIVITYACCEPTEDED";
+        case MTP_OBJECTPROPCODE_ACTIVITYTENTATIVE             : "ACTIVITYTENTATIVE";
+        case MTP_OBJECTPROPCODE_ACTIVITYDECLINED              : "ACTIVITYDECLINED";
+        case MTP_OBJECTPROPCODE_ACTIVITYREMINDERTIME          : "ACTIVITYREMINDERTIME";
+        case MTP_OBJECTPROPCODE_ACTIVITYOWNER                 : "ACTIVITYOWNER";
+        case MTP_OBJECTPROPCODE_ACTIVITYSTATUS                : "ACTIVITYSTATUS";
+        
+        case MTP_OBJECTPROPCODE_OWNER                    : "OWNER";
+        case MTP_OBJECTPROPCODE_EDITOR                   : "EDITOR";
+        case MTP_OBJECTPROPCODE_WEBMASTER                : "WEBMASTER";
+        case MTP_OBJECTPROPCODE_URLSOURCE                : "URLSOURCE";
+        case MTP_OBJECTPROPCODE_URLDESTINATION           : "URLDESTINATION";
+        case MTP_OBJECTPROPCODE_TIME_BOOKMARK            : "TIME_BOOKMARK";
+        case MTP_OBJECTPROPCODE_OBJECT_BOOKMARK          : "OBJECT_BOOKMARK";
+        case MTP_OBJECTPROPCODE_BYTE_BOOKMARK            : "BYTE_BOOKMARK";
+        case MTP_OBJECTPROPCODE_DATA_OFFSET              : "DATA_OFFSET";
+        case MTP_OBJECTPROPCODE_DATA_LENGTH              : "DATA_LENGTH";
+        case MTP_OBJECTPROPCODE_DATA_UNITS               : "DATA_UNITS";
+        case MTP_OBJECTPROPCODE_DATA_REFERENCED_OBJECT_RESOURCE : "DATA_REFERENCED_OBJECT_RESOURCE";
+        case MTP_OBJECTPROPCODE_BACK_REFERENCES          : "BACK_REFERENCES";
+        case MTP_OBJECTPROPCODE_LASTBUILDDATE            : "LASTBUILDDATE";
+        case MTP_OBJECTPROPCODE_TIMETOLIVE               : "TIMETOLIVE";
+        case MTP_OBJECTPROPCODE_MEDIAGUID                : "MEDIAGUID";
+        default:  _MTPObjectPropcodeReservedTable(value);
+    }
+}
+Table _MTPObjectPropcodeReservedTable
+{
+    switch
+    {
+        case ((value>=MTP_OBJECTPROPCODE_VENDOREXTENSION_FIRST)&& (value<=MTP_OBJECTPROPCODE_VENDOREXTENSION_LAST)): "VendorExtension";
+        default: "Unknown";
+    }
+}
+
+// Property Description: property form flags
+Table MTPFormFlagsToStringTable
+{
+    switch(value)
+    {
+        case MTP_FORMFLAGS_NONE         : "NONE";
+        case MTP_FORMFLAGS_RANGE        : "RANGE";
+        case MTP_FORMFLAGS_ENUM         : "ENUM";
+        case MTP_FORMFLAGS_DATETIME     : "DATETIME";
+        case MTP_FORMFLAGS_FIXEDARRAY   : "FIXEDARRAY";
+        case MTP_FORMFLAGS_REGEX        : "REGEX";
+        case MTP_FORMFLAGS_BYTEARRAY    : "BYTEARRAY";
+        case MTP2_FORMFLAGS_OBJECTPROP  : "OBJECTPROP";
+        case MTP_FORMFLAGS_SVCEXT_OBJECTPROP  : "SVCEXT_OBJECTPROP";
+        case MTP2_FORMFLAGS_METHODPARAM       : "METHODPARAM";
+        case MTP_FORMFLAGS_SVCEXT_METHODPARAM : "SVCEXT_METHODPARAM";
+        case MTP2_FORMFLAGS_OBJECTID          : "OBJECTID";
+        case MTP_FORMFLAGS_SVCEXT_OBJECTID    : "SVCEXT_OBJECTID";
+        case MTP_FORMFLAGS_LONGSTRING         : "LONGSTRING";
+        default: "Unknown";
+
+    }
+}
+
+// Tables for MTP_OPCODE_GETSTORAGEINFO
+Table MTPStorageTypeToStringTable
+{
+    switch(value)
+    {
+        case 0x0000:    "Undefined";
+        case 0x0001:    "Fixed ROM";
+        case 0x0002:    "Removable ROM";
+        case 0x0003:    "Fixed RAM";
+        case 0x0004:    "Removable RAM";
+        default:        "Reserved";
+    }
+}
+
+// StorageInfo File system types
+Table MTPFileSystemTypeToStringTable
+{
+    switch
+    {
+        case (value==0x0000):    "Undefined";
+        case (value==0x0001):    "Generic flat";
+        case (value==0x0002):    "Generic hierarchical";
+        case (value==0x0003):    "DCF";
+        case ((value>=0x0004) && (value<=0x7FFF))     : "Reserved";
+        case ((value>=0x8000) && (value<=0xFFFF))     : "Vendor Extension";
+    }
+}
+
+// Storage Info: storage access capabilities
+Table MTPAccessCapabilityToStringTable
+{
+    switch(value)
+    {
+        case 0x0000:    "Read-Write";
+        case 0x0001:    "Read-Only without object deletion";
+        case 0x0002:    "Read-only with object deletion";
+        default    :    "Reserved";
+    }
+}
+
+// Object Info: protection status
+Table MTPProtectionStatusToStringTable
+{
+    switch(value)
+    {
+        case 0x0000:    "No Protection";
+        case 0x0001:    "Read-only";
+        case 0x8002:    "Read-only data";
+        case 0x8003:    "Non-transferable data";
+        default:        "Reserved";
+    }
+}
+
+// Object Info: association types
+Table MTPAssociationTypeToStringTable
+{
+    switch
+    {
+        case (value == 0x0000):    "Undefined";
+        case (value == 0x0001):    "Generic Folder";
+        case (value == 0x0002):    "Album";
+        case (value == 0x0003):    "Time Sequence";
+        case (value == 0x0004):    "Horizontal Panoramic";
+        case (value == 0x0005):    "Vertical Panoramic";
+        case (value == 0x0006):    "2D Panoramic";
+        case (value == 0x0007):    "Ancillary Data";
+        case ((value >= 0x0008) && value <=0x7FFF): "Reserved";
+        case ((value >= 0x8000) && value <=0xFFFF): "VendorExtension";
+    }
+}
+
+
+Table WPDMTPResponseParamNameLookup(Command, ParamNum)
+{
+    switch
+    {
+        case (Command==MTP_OPCODE_GETNUMOBJECTS    && ParamNum==1): "NumObjects";
+        case (Command==MTP_OPCODE_SENDOBJECTINFO   && ParamNum==1): "Responder StorageID in which the object will be stored";
+        case (Command==MTP_OPCODE_SENDOBJECTINFO   && ParamNum==2): "Responder parent ObjectHandle in which the object will be stored";
+        case (Command==MTP_OPCODE_SENDOBJECTINFO   && ParamNum==3): "Responder's reserved ObjectHandle for the incoming object";
+        case (Command==MTP_OPCODE_COPYOBJECT       && ParamNum==1): "ObjectHandle of new copy of object";
+        case (Command==MTP_OPCODE_GETPARTIALOBJECT   && ParamNum==1): "Actual number of bytes sent";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST && ParamNum==1): "Responder StorageID in which the object will be stored";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST && ParamNum==2): "Responder parent ObjectHandle in which the object will be stored";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST && ParamNum==3): "Responder's reserved ObjectHandle for the incoming object";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST && ParamNum==4): "[Index of failed property]";
+        case ((Command==MTP_OPCODE_UPDATEOBJECTPROPLIST
+            || Command==MTP2_OPCODE_UPDATEOBJECTPROPLIST)
+                                                        && ParamNum==1): "[Index of failed property]";
+        case ((Command==MTP_OPCODE_DELETEOBJECTPROPLIST
+            || Command==MTP2_OPCODE_DELETEOBJECTPROPLIST)
+                                                        && ParamNum==1): "[Index of failed property]";
+        case ((Command==MTP_OPCODE_DELETESERVICEPROPLIST
+            || Command==MTP2_OPCODE_DELETESERVICEPROPLIST)
+                                                        && ParamNum==1): "[Index of failed property]";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM      && ParamNum==1): "StreamHandle";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM      && ParamNum==2): "[MTU (Responder)]";
+        case (Command==MTP_OPCODE_READOBJECTSTREAM      && ParamNum==1): "Units read";
+        case (Command==MTP_OPCODE_WRITEOBJECTSTREAM     && ParamNum==1): "Bytes written";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM      && ParamNum==1): "Absolute position (most  significant 4 bytes)";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM      && ParamNum==2): "Absolute position (least significant 4 bytes)";
+    }
+}
+Table WPDMTPCommandParamNameLookup(Command, ParamNum)
+{
+    switch
+    {
+        case (Command==MTP_OPCODE_OPENSESSION      && ParamNum==1): "SessionID";
+        case (Command==MTP_OPCODE_GETSTORAGEINFO   && ParamNum==1): "StorageID";
+        case (Command==MTP_OPCODE_GETNUMOBJECTS    && ParamNum==1): "StorageID";
+        case (Command==MTP_OPCODE_GETNUMOBJECTS    && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_GETNUMOBJECTS    && ParamNum==3): "[ObjectHandle of Association for which number of children is needed]";        
+        case (Command==MTP_OPCODE_GETOBJECTHANDLES && ParamNum==1): "StorageID";
+        case (Command==MTP_OPCODE_GETOBJECTHANDLES && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_GETOBJECTHANDLES && ParamNum==3): "[ObjectHandle of Association or Hierarchical folder for which a list of children is needed]";
+        case (Command==MTP_OPCODE_GETOBJECTINFO    && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETOBJECT        && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETTHUMB         && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_DELETEOBJECT     && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_DELETEOBJECT     && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_SENDOBJECTINFO   && ParamNum==1): "[Destination StorageID on responder]";
+        case (Command==MTP_OPCODE_SENDOBJECTINFO   && ParamNum==2): "[Parent ObjectHandle on responder where object shall be placed]";
+        case (Command==MTP_OPCODE_INITIATECAPTURE  && ParamNum==1): "[StorageID]";
+        case (Command==MTP_OPCODE_INITIATECAPTURE  && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_FORMATSTORE      && ParamNum==1): "StorageID";
+        case (Command==MTP_OPCODE_FORMATSTORE      && ParamNum==2): "[FileSystem Format]";
+        case (Command==MTP_OPCODE_SELFTEST         && ParamNum==1): "[SelfTest Type]";
+        case (Command==MTP_OPCODE_SETOBJECTPROTECTION       && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_SETOBJECTPROTECTION       && ParamNum==2): "ProtectionStatus";
+        case (Command==MTP_OPCODE_GETDEVICEPROPDESC         && ParamNum==1): "DevicePropCode";
+        case (Command==MTP_OPCODE_GETDEVICEPROPVALUE        && ParamNum==1): "DevicePropCode";
+        case (Command==MTP_OPCODE_SETDEVICEPROPVALUE        && ParamNum==1): "DevicePropCode";
+        case (Command==MTP_OPCODE_RESETDEVICEPROPVALUE      && ParamNum==1): "DevicePropCode";
+        case (Command==MTP_OPCODE_TERMINATECAPTURE          && ParamNum==1): "TransactionID";
+        case (Command==MTP_OPCODE_MOVEOBJECT                && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_MOVEOBJECT                && ParamNum==2): "StorageID of store to move object to";
+        case (Command==MTP_OPCODE_MOVEOBJECT                && ParamNum==3): "ObjectHandle of the new ParentObject";
+        case (Command==MTP_OPCODE_COPYOBJECT                && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_COPYOBJECT                && ParamNum==2): "StorageID that the newly copied object shall be placed into";
+        case (Command==MTP_OPCODE_COPYOBJECT                && ParamNum==3): "ObjectHandle of the newly copied object's parent";
+        case (Command==MTP_OPCODE_GETPARTIALOBJECT          && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETPARTIALOBJECT          && ParamNum==2): "Offset in bytes";
+        case (Command==MTP_OPCODE_GETPARTIALOBJECT          && ParamNum==3): "Maximum number of bytes to obtain";
+        case (Command==MTP_OPCODE_INITIATEOPENCAPTURE       && ParamNum==1): "[StorageID]";
+        case (Command==MTP_OPCODE_INITIATEOPENCAPTURE       && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_GETOBJECTPROPSSUPPORTED   && ParamNum==1): "ObjectFormatCode";
+        case (Command==MTP_OPCODE_GETOBJECTPROPDESC         && ParamNum==1): "ObjectPropCode";
+        case (Command==MTP_OPCODE_GETOBJECTPROPDESC         && ParamNum==2): "ObjectFormatCode";
+        case (Command==MTP_OPCODE_GETOBJECTPROPVALUE        && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETOBJECTPROPVALUE        && ParamNum==2): "ObjectPropCode";
+        case (Command==MTP_OPCODE_SETOBJECTPROPVALUE        && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_SETOBJECTPROPVALUE        && ParamNum==2): "ObjectPropCode";
+        case (Command==MTP_OPCODE_GETOBJECTREFERENCES       && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_SETOBJECTREFERENCES       && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETOBJECTPROPLIST         && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_GETOBJECTPROPLIST         && ParamNum==2): "[ObjectFormatCode]";
+        case (Command==MTP_OPCODE_GETOBJECTPROPLIST         && ParamNum==3): "ObjectPropCode";
+        case (Command==MTP_OPCODE_GETOBJECTPROPLIST         && ParamNum==4): "[ObjectPropGroupCode]";
+        case (Command==MTP_OPCODE_GETOBJECTPROPLIST         && ParamNum==5): "[Depth]";
+        case (Command==MTP_OPCODE_GETINTERDEPENDENTPROPDESC && ParamNum==1): "ObjectFormatCode";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST        && ParamNum==1): "[Destination StorageID on responder]";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST        && ParamNum==2): "[Parent ObjectHandle on responder where object shall be placed]";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST        && ParamNum==3): "ObjectFormatCode";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST        && ParamNum==4): "ObjectSize(most  significant 4 bytes)";
+        case (Command==MTP_OPCODE_SENDOBJECTPROPLIST        && ParamNum==5): "ObjectSize(least significant 4 bytes)";
+        case ((Command==MTP_OPCODE_GETSERVICEINFO
+            || Command==MTP2_OPCODE_GETSERVICEINFO)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_GETSERVICECAPABILITIES
+            || Command==MTP2_OPCODE_GETSERVICECAPABILITIES)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_GETSERVICECAPABILITIES
+            || Command==MTP2_OPCODE_GETSERVICECAPABILITIES)
+                                                            && ParamNum==2): "[FormatCode]";
+        case ((Command==MTP_OPCODE_GETSERVICEPROPERTIES
+            || Command==MTP2_OPCODE_GETSERVICEPROPERTIES)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_GETSERVICEPROPERTIES
+            || Command==MTP2_OPCODE_GETSERVICEPROPERTIES)
+                                                            && ParamNum==2): "[ServicePropCode]";
+        case ((Command==MTP_OPCODE_GETSERVICEPROPERTYLIST
+            || Command==MTP2_OPCODE_GETSERVICEPROPERTYLIST)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_GETSERVICEPROPERTYLIST
+            || Command==MTP2_OPCODE_GETSERVICEPROPERTYLIST)
+                                                            && ParamNum==2): "[ServicePropCode]";
+        case ((Command==MTP_OPCODE_SETSERVICEPROPERTYLIST
+            || Command==MTP2_OPCODE_SETSERVICEPROPERTYLIST)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_UPDATEOBJECTPROPLIST
+            || Command==MTP2_OPCODE_UPDATEOBJECTPROPLIST)
+                                                            && ParamNum==1): "ObjectHandle";
+        case ((Command==MTP_OPCODE_DELETEOBJECTPROPLIST
+            || Command==MTP2_OPCODE_DELETEOBJECTPROPLIST)
+                                                            && ParamNum==1): "ObjectHandle";
+        case ((Command==MTP_OPCODE_DELETESERVICEPROPLIST
+            || Command==MTP2_OPCODE_DELETESERVICEPROPLIST)
+                                                            && ParamNum==1): "ServiceID";
+        case ((Command==MTP_OPCODE_GETFORMATCAPABILITIES
+            || COMMAND==MTP2_OPCODE_GETFORMATCAPABILITIES)
+                                                            && ParamNum==1): "[FormatCode]";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM          && ParamNum==1): "ObjectHandle";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM          && ParamNum==2): "Access";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM          && ParamNum==3): "[MTU (Initiator)]";
+        case (Command==MTP_OPCODE_OPENOBJECTSTREAM          && ParamNum==4): "[Alternative Stream]";
+        case (Command==MTP_OPCODE_READOBJECTSTREAM          && ParamNum==1): "StreamHandle";
+        case (Command==MTP_OPCODE_READOBJECTSTREAM          && ParamNum==2): "Units";
+        case (Command==MTP_OPCODE_READOBJECTSTREAM          && ParamNum==3): "Units to read";
+        case (Command==MTP_OPCODE_WRITEOBJECTSTREAM         && ParamNum==1): "StreamHandle";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM          && ParamNum==1): "StreamHandle";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM          && ParamNum==2): "Offset type";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM          && ParamNum==3): "Units of offset";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM          && ParamNum==4): "Offset (most  significant 4 bytes)";
+        case (Command==MTP_OPCODE_SEEKOBJECTSTREAM          && ParamNum==5): "Offset (least significant 4 bytes)";
+        case (Command==MTP_OPCODE_CLOSEOBJECTSTREAM         && ParamNum==1): "StreamHandle";
+    }
+}

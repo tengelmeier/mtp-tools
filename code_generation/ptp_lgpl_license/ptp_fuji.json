@@ -1,0 +1,11 @@
+{
+    "DevicePropertyCode": {
+        "0xD017": "ColorTemperature", 
+        "0xD018": "Quality", 
+        "0xD201": "ReleaseMode", 
+        "0xD206": "FocusAreas", 
+        "0xD213": "AELock", 
+        "0xD218": "Aperture", 
+        "0xD219": "ShutterSpeed"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "DevicePropertyCode": {
+        "0xD001": "ColorTemperature", 
+        "0xD002": "DateTimeStampFormat", 
+        "0xD003": "BeepMode", 
+        "0xD004": "VideoOut", 
+        "0xD005": "PowerSaving", 
+        "0xD006": "UI_Language"
+    }, 
+    "FormatCode": {
+        "0xb002": "M3U"
+    }, 
+    "OpCode": {
+        "0x9003": "GetSerial", 
+        "0x9004": "SetSerial", 
+        "0x9005": "SendFileObjectInfo", 
+        "0x9006": "SendFileObject", 
+        "0x9008": "SetText"
+    }, 
+    "ResponseCode": {
+        "0xA001": "FilenameRequired", 
+        "0xA002": "FilenameConflicts", 
+        "0xA003": "FilenameInvalid"
+    }
+}

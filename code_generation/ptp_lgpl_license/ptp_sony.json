@@ -1,0 +1,31 @@
+{
+    "DevicePropertyCode": {
+        "0xD200": "DPCCompensation", 
+        "0xD201": "DRangeOptimize", 
+        "0xD203": "ImageSize", 
+        "0xD20D": "ShutterSpeed", 
+        "0xD20F": "ColorTemp", 
+        "0xD210": "CCFilter", 
+        "0xD211": "AspectRatio", 
+        "0xD216": "ExposeIndex", 
+        "0xD21B": "PictureEffect", 
+        "0xD21C": "ABFilter"
+    }, 
+    "EventCode": {
+        "0xC201": "ObjectAdded", 
+        "0xC202": "ObjectRemoved", 
+        "0xC203": "PropertyChanged"
+    }, 
+    "FormatCode": {
+        "0xb101": "RAW"
+    }, 
+    "OpCode": {
+        "0x9201": "SDIOConnect", 
+        "0x9202": "GetSDIOGetExtDeviceInfo", 
+        "0x9203": "GetDevicePropdesc", 
+        "0x9204": "GetDevicePropertyValue", 
+        "0x9205": "SetControlDeviceA", 
+        "0x9206": "GetControlDeviceDesc", 
+        "0x9207": "SetControlDeviceB"
+    }
+}
