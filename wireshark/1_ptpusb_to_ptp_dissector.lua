@@ -1,29 +1,3 @@
-local PTPIP_PACKETTYPE = {
-
-    INVALID                = 0,
-    CMD_REQUEST            = 6,  -- possibly Operation request in [1] 2.3.6 agrees with [3]
-    CMD_RESPONSE           = 7,  -- possibly Operation response in [1] 2.3 .7  agrees with [3]
-    EVENT                  = 8,
-    START_DATA_PACKET      = 9,
-    DATA_PACKET            = 10,
-    CANCEL_TRANSACTION     = 11,
-    END_DATA_PACKET        = 12
-} 
-
-
--- Unless otherwise stated, names are based on info in [3]
-local PTPIP_PACKETTYPENAMES = {
-    [PTPIP_PACKETTYPE.INVALID]=          "Invalid",
-    [PTPIP_PACKETTYPE.CMD_REQUEST]=      "Operation Request Packet",  -- string based on [1]
-    [PTPIP_PACKETTYPE.CMD_RESPONSE]=     "Operation Response Packet", -- string based on [1]
-    [PTPIP_PACKETTYPE.EVENT]=            "Event Packet",
-    [PTPIP_PACKETTYPE.START_DATA_PACKET]="Start Data Packet",
-    [PTPIP_PACKETTYPE.DATA_PACKET]=      "Data Packet",
-    [PTPIP_PACKETTYPE.CANCEL_TRANSACTION]= "Cancel Packet",
-    [PTPIP_PACKETTYPE.END_DATA_PACKET]=  "End Data Packet"
-}
-
-
 local PTP_PACKETTYPE = {
 	UNDEF = 0,
 	CMD   = 1,
@@ -39,27 +13,43 @@ local PTP_PACKETTYPENAMES = {
 	[PTP_PACKETTYPE.EVENT]="Event"
 }
 
+-- interface to the mtp post-dissector:
+local PTPIP_PACKETTYPE = {
+
+    INVALID                = 0,
+    CMD_REQUEST            = 6,  -- possibly Operation request in [1] 2.3.6 agrees with [3]
+    CMD_RESPONSE           = 7,  -- possibly Operation response in [1] 2.3 .7  agrees with [3]
+    EVENT                  = 8,
+    START_DATA_PACKET      = 9,
+    DATA_PACKET            = 10,
+    CANCEL_TRANSACTION     = 11,
+    END_DATA_PACKET        = 12
+} 
+
 ptpusb_proto = Proto("ptpusb","PTP/USB")
 local ptpusb = {
-	length             = ProtoField.uint32("ptp.length","PTP Packet Length"),
-	header_tid_offset  = ProtoField.uint32("ptp.ptpTvbOffset","Transaction ID Offset",base.DEC),
-	header_tid_offset  = ProtoField.uint32("ptp.headerTidOffset","Transaction ID Offset",base.DEC),
-	packet_type        = ProtoField.uint32("ptp.pktType","Packet Type in PTPIP",base.HEX),
-    transaction_id     = ProtoField.uint32("ptp.transactionID","Transaction ID",base.HEX),
-    data_length        = ProtoField.uint64("ptp.dataLen","Data Length",base.HEX),
     packet_code        = ProtoField.uint16("ptp.pktCode","Code",base.HEX), -- one of opcode, reponsecode or eventcode
-        
+    transaction_id     = ProtoField.uint32("ptp.transactionID","Transaction ID",base.HEX),
+	length             = ProtoField.uint32("ptp.length","PTP Packet Length"),
+	-- internal info as interface fot mtp post-dissector:
+	header_tid_offset  = ProtoField.uint32("ptp.headerTidOffset","Transaction ID Offset",base.DEC), -- necessary due to different packet layouts in different transport layers 
+	packet_type        = ProtoField.uint32("ptp.pktType","Packet Type in PTPIP",base.HEX),
+    data_length        = ProtoField.uint64("ptp.dataLen","Data Length",base.HEX), -- extracted from start data packet
+    -- standalone usage:
 	ptype  = ProtoField.uint16("ptpusb.ptype", "Type"),
 	param  = ProtoField.uint32("ptpusb.param", "Param", base.HEX),
 	resp   = ProtoField.uint32("ptpusb.resp",  "Response", base.HEX),
 }
-ptpusb_proto.fields = {ptpusb.param, ptpusb.resp, ptpusb.ptype,
-ptpusb.length,
-ptpusb.header_tid_offset,
-ptpusb.packet_type,
-ptpusb.transaction_id,
-ptpusb.data_length,
-ptpusb.packet_code
+ptpusb_proto.fields = {
+	ptpusb.param, 
+	ptpusb.resp, 
+	ptpusb.ptype,
+	ptpusb.length,
+	ptpusb.header_tid_offset,
+	ptpusb.packet_type,
+	ptpusb.transaction_id,
+	ptpusb.data_length,
+	ptpusb.packet_code
 }
 
 --usb_idvendor = Field.new("usb.idVendor")
