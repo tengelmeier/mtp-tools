@@ -191,12 +191,13 @@ end
  --]]
 function dissect_start_data(tvb, pinfo, tree)
     local offset = header_length
-    offset = offset + add_ptp_transactionID(tvb, pinfo, tree, offset)
-    local length_lowword = tvb(offset, 4):le_uint()
-    local length_hiword = tvb(offset + 4, 4):le_uint()
-    local length = UInt64( length_lowword, length_hiword )
+    tree:add_le(hdr_fields.packet_code, tvb(offset,2))
+    offset = offset + add_ptp_transactionID(tvb, pinfo, tree, offset + 2)
+    --local length_lowword = tvb(offset, 4):le_uint()
+    --local length_hiword = tvb(offset + 4, 4):le_uint()
+    --local length = UInt64( length_lowword, length_hiword )
     
-    tree:add(hdr_fields.data_length, tvb(offset, 8), length )
+    --tree:add(hdr_fields.data_length, tvb(offset, 8), length )
     
      -- [1] specifies in 2.3.9 if total data len is this value then len is unknown 
      -- if (dataLen == G_GUINT64_CONSTANT(0xFFFFFFFFFFFFFFFF))    
@@ -271,7 +272,7 @@ end
 
 local FUJI_TO_PTPIP_PACKETTYPE = {
 	[1] = PTPIP_PACKETTYPE.CMD_REQUEST,
-	[2] = PTPIP_PACKETTYPE.END_DATA_PACKET,
+	[2] = PTPIP_PACKETTYPE.START_DATA_PACKET,
 	[3] = PTPIP_PACKETTYPE.CMD_RESPONSE,
 	[0xFFFF] = PTPIP_PACKETTYPE.CANCEL_TRANSACTION -- unknown, seems to be some error (seen after some syn errors)
 }
@@ -316,25 +317,32 @@ function ptpip_proto.dissector(tvb,pinfo,tree)
    local ptp_length =  ptp_length_tvb:le_uint()
    
    local packet_type_tvb = tvb(4,2)
-   local packet_type = packet_type_tvb:le_uint()
+   local packet_type = packet_type_tvb:le_uint()    
+   -- local ptpip_packet_type = packet_type
    
+   local ptpip_packet_type = PTPIP_PACKETTYPE.DATA_PACKET
    local opcode = tvb( header_length ,2):le_uint()
-   local ptpip_packet_type = packet_type
-   if opcode then ptpip_packet_type = FUJI_TO_PTPIP_PACKETTYPE[packet_type] end
+   if opcode and FUJI_TO_PTPIP_PACKETTYPE[packet_type] then 
+       	   ptpip_packet_type = FUJI_TO_PTPIP_PACKETTYPE[packet_type]  
+    end
          
-   local prefix = "PTP/IP: "
+   local prefix = "FUJI PTP/IP: "
    if opcode ~= 0 then 
    		prefix = 'PTP: '
    else 
    		ptpip_packet_type = PTPIP_PACKETTYPE.INIT_COMMAND_REQUEST
    end
    
-   local packet_type_name = PTPIP_PACKETTYPENAMES[ptpip_packet_type] or 'Unknown'
+   local packet_type_name = PTPIP_PACKETTYPENAMES[ptpip_packet_type] or 'Unknown'   
    local subtree = tree:add(ptpip_proto,tvb(), prefix .. packet_type_name )
+   if ptpip_packet_type then subtree:add(hdr_fields.packet_type, ptpip_packet_type) end -- 16 bit in USB
+
+   if ptpip_packet_type == PTPIP_PACKETTYPE.DATA_PACKET then 
+      return 
+   end
    subtree:add_le(hdr_fields.length, ptp_length_tvb)
    -- subtree:add_le(hdr_fields.data_direction, tvb(8,4)) 
    subtree:add_le(hdr_fields.fuji_packet_type, packet_type_tvb)
-   if ptpip_packet_type then subtree:add(hdr_fields.packet_type, ptpip_packet_type) end -- 16 bit in USB
 
    local buffer_length = tvb:reported_length_remaining()
    buffer_length = math.min( buffer_length, ptp_length )
@@ -355,7 +363,6 @@ end
 function  datastream_proto.dissector(tvb,pinfo,tree)
 --  now here we enter tota observation land: 
 	pinfo.cols.protocol = "FUJI PTP DATA STREAM"
-	
 	if tvb:reported_length_remaining() > 16 then 
 		local length_tvb = tvb(0, 8)
 	

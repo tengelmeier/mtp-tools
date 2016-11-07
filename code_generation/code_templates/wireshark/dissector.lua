@@ -350,18 +350,19 @@ local MTP_DISSECTORS = {
 
 function ptp_proto.dissector(tvb,pinfo,tree)
 
-   -- pinfo.cols.protocol = "PTP"
-   local packet_type = parent_packet_type_field()()
-   local ptp_length = parent_length_field()()
-   local offset_field = parent_header_offset_field()
-   local offset
-   if offset_field then offset = offset_field() end
+   local packet_type = PTPIP_PACKETTYPE.UNDEFINED 
+   local ptp_length = nil 
+   local offset = nil
+   
+   if parent_packet_type_field() then packet_type = parent_packet_type_field()() end
+   if parent_length_field() then ptp_length = parent_length_field()() end
+   if parent_header_offset_field() then offset = parent_header_offset_field()() end
 
-   -- dprint2( "Found packet:" .. packet_type .. ' l:' .. ptp_length .. ' o:' .. offset .. ' r:' .. ptp_length - offset)
-   if not offset or not ptp_length or not packet_type then
+   if not offset or not ptp_length or packet_type == PTPIP_PACKETTYPE.UNDEFINED  then
    		dprint( 'Missing field in dissection' )
    		return
    end
+   dprint( "Found packet:" .. packet_type .. ' l:' .. ptp_length .. ' o:' .. offset .. ' r:' .. ptp_length - offset)
 
    if offset > ptp_length then
    		dprint( 'PTP data size problem' )
