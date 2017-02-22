@@ -116,6 +116,8 @@ local data_hdr_fields =
 	length = ProtoField.uint64("ptp.fujiDataStreamLength","Length"),
     stream_id = ProtoField.uint32("ptp.fujiStreamID","StreamID",base.HEX),
 	unknown = ProtoField.uint32("ptp.fujiUnknownHeader","Unknown",base.HEX),
+	-- data seems to be used otherwise:
+    payload = ProtoField.bytes("ptp.payload","payload",base.HEX),
 }
 
 function dissect_none( tvb, proto, tree)  end 
@@ -274,6 +276,7 @@ local FUJI_TO_PTPIP_PACKETTYPE = {
 	[1] = PTPIP_PACKETTYPE.CMD_REQUEST,
 	[2] = PTPIP_PACKETTYPE.START_DATA_PACKET,
 	[3] = PTPIP_PACKETTYPE.CMD_RESPONSE,
+	[4] = PTPIP_PACKETTYPE.EVENT,
 	[0xFFFF] = PTPIP_PACKETTYPE.CANCEL_TRANSACTION -- unknown, seems to be some error (seen after some syn errors)
 }
  
@@ -324,7 +327,7 @@ function ptpip_proto.dissector(tvb,pinfo,tree)
    local opcode = tvb( header_length ,2):le_uint()
    if opcode and FUJI_TO_PTPIP_PACKETTYPE[packet_type] then 
        	   ptpip_packet_type = FUJI_TO_PTPIP_PACKETTYPE[packet_type]  
-    end
+   end
          
    local prefix = "FUJI PTP/IP: "
    if opcode ~= 0 then 
@@ -361,7 +364,7 @@ function ptpip_proto.dissector(tvb,pinfo,tree)
 end
   
 function  datastream_proto.dissector(tvb,pinfo,tree)
---  now here we enter tota observation land: 
+--  now here we enter total observation land: 
 	pinfo.cols.protocol = "FUJI PTP DATA STREAM"
 	if tvb:reported_length_remaining() > 16 then 
 		local length_tvb = tvb(0, 8)
@@ -375,6 +378,10 @@ function  datastream_proto.dissector(tvb,pinfo,tree)
 			tree:add(data_hdr_fields.length, length_tvb, length_tvb:le_uint64() )
 			tree:add(data_hdr_fields.stream_id, sid_tvb, sid_tvb:le_uint() )
 			tree:add(data_hdr_fields.unknown, unknown_tvb, unknown_tvb:le_uint() )
+			tree:add(data_hdr_fields.payload,tvb(16))
+		else
+		    local tree = tree:add(datastream_proto,tvb(), 'Fuji datastream without header - continued data?')
+		    tree:add(data_hdr_fields.payload,tvb())
 		end
 	end
 
