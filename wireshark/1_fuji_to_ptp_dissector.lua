@@ -108,7 +108,7 @@ local hdr_fields =
     connection_number = ProtoField.uint32("ptpip.connection","Connection Number",base.HEX),
     dataphase_info = ProtoField.uint32("ptpip.dataphase", "Data Phase Info",base.HEX),
     packet_code = ProtoField.uint32("ptp.pktCode","code",base.HEX), -- one of opcode, reponsecode or eventcode
-    data = ProtoField.bytes("ptp.data","data",base.HEX),
+    data = ProtoField.bytes("ptp.data","data",base.SPACE),
 }
 
 local data_hdr_fields =
@@ -117,7 +117,7 @@ local data_hdr_fields =
     stream_id = ProtoField.uint32("ptp.fujiStreamID","StreamID",base.HEX),
 	unknown = ProtoField.uint32("ptp.fujiUnknownHeader","Unknown",base.HEX),
 	-- data seems to be used otherwise:
-    payload = ProtoField.bytes("ptp.payload","payload",base.HEX),
+    payload = ProtoField.bytes("ptp.payload","payload",base.SPACE),
 }
 
 function dissect_none( tvb, proto, tree)  end 

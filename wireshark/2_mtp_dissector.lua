@@ -1952,7 +1952,7 @@ local hdr_fields =
     param3 = ProtoField.uint32("ptp.param3", "Parameter 3", base.HEX),
     param4 = ProtoField.uint32("ptp.param4", "Parameter 4", base.HEX),
     param5 = ProtoField.uint32("ptp.param5", "Parameter 5", base.HEX),
-    data = ProtoField.bytes("ptp.data", "Data", base.HEX),
+    data = ProtoField.bytes("ptp.data", "Data", base.SPACE),
 }
 
 -- Wireshark parser implementation
