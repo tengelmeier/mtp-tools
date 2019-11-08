@@ -1,13 +1,13 @@
 Readme for MTP tools
 ====================
 
-The project contains an Wiresark plugin to deal with PTP / MTP / PTP-IP / Fuji PTP over IP in various flavors.
-One of the goals was to to create an easy to extend Wireshark dissector.
+The project contains an Wireshark plugin to deal with PTP / MTP / PTP-IP / Fuji PTP over IP in various flavors.
+One of the goals was to to create an easy to extend Wireshark dissector for PTP.
 
 The toolchain implements: 
 
-- extract the descriptions of PTP types and constants: *ptp_descriptions*
-- generate code for dealing with PTP data *code\_generation*
+- extract the descriptions of PTP types and constants to JSON from other sources: *ptp_descriptions*
+- generate code for dealing with PTP data based on JSON API descriptions *code\_generation*
 - an example of such generated code: *wireshark*, an wireshark dissector lua plugin that extracts much more of PTP data that the original C-based dissector plugin
 
 The code-generation approach is influenced by 
@@ -27,7 +27,7 @@ I hope I can explain it as simple as possible. And: IANAL. In my understanding, 
 This gives the following matrix:
 
 - my code is under the BSD license
-- the MTP constants in mtp_description.jason are based on wpdmtp is under the BSD license
+- the MTP constants in mtp_description.json are based on wpdmtp is under the BSD license
 - the vendor specific ptp\_*.json descriptions are based libgphoto ptp.h and under the LGPL license
 - any code using wireshark APIs is under the GPL license. See https://ask.wireshark.org/questions/12371/wireshark-plugin-and-gpl-license
 
